@@ -1,0 +1,63 @@
+&CONFIG 
+
+! This config is used in order to convert the IM (x,y)-coordinates of the ice2sea Greenland data set as provided 
+! by Bamber et al. (2013), to (lon,lat)-coordinates. The coordinates are inverse projected by an polar SG projection
+! for the WGS84 ellipsoid, with a standard parallel of 71 degrees North.
+! This is the first step in remapping an IM grid. So with: 
+!  ./src/oblimap_convert_program config-files/oblimap/convert-for-ice2sea/config_oblimap_convert_ice2sea_01x01km
+! the fields of an IM grid are copied to a GCM grid while the (x,y)-coordinates are converted to (lon,lat)-coordinates
+! by a projection as specified below. In a second 'normal' step these GCM fields are mapped to an IM grid again, e.g.
+! with:
+!  ./src/oblimap_gcm_to_im_program config-files/oblimap/ice2sea-to-im/config_oblimap_ice2sea_to_im_greenland_20x20km
+
+NLON_config                                               =   2501                                                ! The NX in the GCM output file, must be equal here to the NX in the IM input file
+NLAT_config                                               =   3001                                                ! The NY in the GCM output file, must be equal here to the NY in the IM input file
+
+NX_config                                                 =   2501                                                ! The number of IM grid points in the x-direction in the IM input file
+NY_config                                                 =   3001                                                ! The number of IM grid points in the y-direction in the IM input file
+dx_config                                                 =   1000                                                ! The           IM grid size   in the x-direction (in meter) in the IM input file
+dy_config                                                 =   1000                                                ! The           IM grid size   in the y-direction (in meter) in the IM input file
+
+lambda_M_config                                           =    321                                                ! The central meridian used in the projection of the DEM by Bamber et al. (2013)
+phi_M_config                                              =     90                                                ! A polar stereographic projection has been used in the projection of the DEM by Bamber et al. (2013) 
+alpha_stereographic_config                                =     19                                                ! Corresponding with a standard parallel of 71 degrees North
+choice_projection_method_config                           = 'oblique_stereographic_projection_ellipsoid_snyder'
+
+! The name of the file containing the input IM data:
+im_input_filename_config                                  = './data/ice2sea/ice2sea_Greenland_geometry_1km_updated.nc'
+im_record_range_config                                    = 1,1
+
+! With oblimap_convert_program  it is obligatory to use a 2D format of the lon-lat coordinates in the output netcdf file:
+unit_conversion_x_ax_config                               = 1000                                                  ! Unit conversion from kilometers to meters
+unit_conversion_y_ax_config                               = 1000                                                  ! Unit conversion from kilometers to meters
+
+number_of_mapped_fields_config                            = 3
+im_field_name_config(-4)                                  = 'projection_y_coordinate'                             ! Should match with the im input file
+im_field_name_config(-2)                                  = 'projection_x_coordinate'                             ! Should match with the im input file
+im_field_name_config(1)                                   = 'SurfaceElevation'                                    ! Should match with the im input file
+im_field_name_config(2)                                   = 'IceThickness'                                        ! Should match with the im input file
+im_field_name_config(3)                                   = 'BedrockElevation'                                    ! Should match with the im input file
+gcm_field_name_config(-4)                                 = 'latitude'
+gcm_field_name_config(-2)                                 = 'longitude'
+gcm_field_name_config(1)                                  = 'Surface Elevation'
+gcm_field_name_config(2)                                  = 'Ice Thickness'
+gcm_field_name_config(3)                                  = 'Bedrock Elevation'
+
+gcm_field_unit_config(-4)                                 = 'degrees north'
+gcm_field_unit_config(-2)                                 = 'degrees east'
+gcm_field_unit_config(1)                                  = 'meter'
+gcm_field_unit_config(2)                                  = 'meter'
+gcm_field_unit_config(3)                                  = 'meter'
+
+gcm_field_longname_config(-4)                             = 'latitude (degrees north)'
+gcm_field_longname_config(-2)                             = 'longitude (degrees east)'
+gcm_field_longname_config( 1)                             = 'Surface Elevation (meter)'
+gcm_field_longname_config( 2)                             = 'Ice Thickness (meter)'
+gcm_field_longname_config( 3)                             = 'Bedrock Elevation (meter)'
+
+invalid_input_value_config(1)                             = -9999
+
+gcm_created_filename_config                               = './data/ice2sea/ice2sea_greenland_geometry_1km_updated_at_lon_lat.nc'
+protect_file_overwriting_config                           = .FALSE.
+oblimap_message_level_config                              = 0                                                     ! With 1 the corner coordinates are printed
+/

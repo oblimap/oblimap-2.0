@@ -1,0 +1,50 @@
+# Configuration for the fortran cray fortran compiler with the ftn wrapper (cca-ecmwf):
+
+# To use the cray fortran compiler the following modules have to be loaded:
+#   module load hdf
+
+# Compiler names:
+  F90 = ftn
+
+# Compiler flags:
+  COMPILER_FLAGS_BASIC    = -eDm -J${MOD_PATH} -G fast -N 1023
+  COMPILER_FLAGS_CHECK    =
+  COMPILER_FLAGS_NETCDF   =
+  COMPILER_FLAGS_PROFILE  =
+  COMPILER_FLAGS_VALGRIND = -g
+
+# Compiler flag combination choices:
+  F90FLAGS_CHOICE_1       = ${COMPILER_FLAGS_BASIC} ${COMPILER_FLAGS_CHECK} ${COMPILER_FLAGS_NETCDF}
+  F90FLAGS_CHOICE_2       = ${COMPILER_FLAGS_BASIC} ${COMPILER_FLAGS_CHECK} ${COMPILER_FLAGS_NETCDF} ${COMPILER_FLAGS_PROFILE}
+  F90FLAGS_CHOICE_3       = ${COMPILER_FLAGS_BASIC} ${COMPILER_FLAGS_CHECK} ${COMPILER_FLAGS_NETCDF}                           ${COMPILER_FLAGS_VALGRIND}
+
+# Compiling options concern including the profiling or the valgrind debugging mode:
+  F90FLAGS                = ${F90FLAGS_CHOICE_2}
+
+# Linking flags of libaries:
+  LINK_FLAGS_HDF          = -lhdf5 -lhdf5_hl -lz
+  LINK_FLAGS_NETCDF       = -lnetcdf -lnetcdff
+  LDFLAGS                 = ${LINK_FLAGS_HDF} ${LINK_FLAGS_NETCDF}
+
+
+
+#   Compiler flags                    Specification  (See for the cray fortran flags: http://docs.cray.com/books/S-3901-55/ )
+#
+#  -eDm                               is the  flag which ?
+#  -J${MOD_PATH}                      is the  path of directory with all the *.mod files
+#  -G                                 is the  flag which ?
+#  -fast                              is the  flag which ?
+#  -N 1023                            is the  flag which sets N columns after which characters are ignored
+#                                     is the  flag for profiling with gmon (sometimes better to turn off if using valgrind)
+#  -g                                 is the  flag which should be turned on if the valgrind debugger is used
+#
+# Linking flags of libaries:
+#  -lhdf5                             is the  ? libary
+#  -lhdf5_hl                          is the  ? libary
+#  -lz                                is the  ? libary
+#  -lnetcdf                           is the  netcdf c libary
+#  -lnetcdff                          is the  netcdf fortran libary
+
+# Linking the fortran compiler with  -g  for debugging with valgrind but omit profiling while using valgrind:
+# valgrind --log-file=log-valgrind-gcm_to_im.bug --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --track-origins=yes ./src/oblimap_gcm_to_im_program config-files/oblimap/ccsm-to-im/config_oblimap_ccsm_to_im_greenland
+# valgrind --log-file=log-valgrind-im_to_gcm.bug --tool=memcheck --leak-check=yes --show-reachable=yes --num-callers=20 --track-fds=yes --track-origins=yes ./src/oblimap_im_to_gcm_program config-files/oblimap/im-to-ccsm/config_oblimap_im_to_ccsm_greenland

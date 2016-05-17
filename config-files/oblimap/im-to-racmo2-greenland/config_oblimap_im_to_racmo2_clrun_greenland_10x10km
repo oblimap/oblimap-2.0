@@ -1,0 +1,112 @@
+! ./src/oblimap_im_to_gcm_program config-files/oblimap/im-to-racmo2-greenland/config_oblimap_im_to_racmo2_clrun_greenland_10x10km
+
+&CONFIG 
+NLON_config                                               =    306                                                ! The number of GCM grid points in the longitude direction
+NLAT_config                                               =    312                                                ! The number of GCM grid points in the latitude  direction
+
+NX_config                                                 =    147                                                ! The number of IM grid points in the x-direction
+NY_config                                                 =    275                                                ! The number of IM grid points in the y-direction
+dx_config                                                 =  10000                                                ! The           IM grid size   in the x-direction (in meter)
+dy_config                                                 =  10000                                                ! The           IM grid size   in the y-direction (in meter)
+
+lambda_M_config                                           =    319                                                ! The longitude coordinate of the middle point of projection (in degrees)
+phi_M_config                                              =     72                                                ! The latitude  coordinate of the middle point of projection (in degrees)
+alpha_stereographic_config                                =      7.1                                              ! alpha determines the standard parallel of the projection (in degrees)
+choice_projection_method_config                           = 'oblique_stereographic_projection_ellipsoid_snyder'
+vincenty_method_for_ellipsoid_config                      = .TRUE.                                                ! This option only affects a IM -> GCM projection on an ellipsoid 
+
+scanning_mode_config                                      = .TRUE.
+scanned_projection_data_filename_config                   = 'oblimap-results/oblimap-scanned-projection-data/scanned-projection-data-im-to-racmo2-clrun-greenland-10x10km.txt'
+!scan_search_block_size_config                             = 3
+R_search_interpolation_config                             = 20000
+shepard_exponent_config                                   = 2
+nearest_point_assignment_config                           = .FALSE.
+
+! The name of the file containing the input data for the mapping:
+gcm_input_filename_config                                 = './data/racmo2-greenland/yearly-racmo2-greenland-forcing-fields.nc'
+gcm_record_range_config                                   = 1,52
+
+im_input_filename_config                                  = './oblimap-results/forcing_fields_at_IM_greenland_10x10km.nc'
+im_record_range_config                                    = 1,52
+
+
+number_of_mapped_fields_config                            = 9
+gcm_field_name_config(-5)                                 = 'NLAT'
+gcm_field_name_config(-4)                                 = 'latitude'                                            ! Should match with the gcm input file
+gcm_field_name_config(-3)                                 = 'NLON'
+gcm_field_name_config(-2)                                 = 'longitude'                                           ! Should match with the gcm input file
+gcm_field_name_config(-1)                                 = 'NTIME'
+gcm_field_name_config(0)                                  = 'dtg'                                                 ! Should match with the gcm input file
+gcm_field_name_config(1)                                  = 'smb'                                                 ! Should match with the gcm input file
+gcm_field_name_config(2)                                  = 'smb_continent'                                       ! Should match with the gcm input file
+gcm_field_name_config(3)                                  = 'evaporation'                                         ! Should match with the gcm input file
+gcm_field_name_config(4)                                  = 'precipitation'                                       ! Should match with the gcm input file
+gcm_field_name_config(5)                                  = 'snowfall'                                            ! Should match with the gcm input file
+gcm_field_name_config(6)                                  = 'runoff'                                              ! Should match with the gcm input file
+gcm_field_name_config(7)                                  = 'refreeze'                                            ! Should match with the gcm input file
+gcm_field_name_config(8)                                  = 'tskin'                                               ! Should match with the gcm input file
+gcm_field_name_config(9)                                  = 't2m'                                                 ! Should match with the gcm input file
+im_field_name_config(-5)                                  = 'NY'
+im_field_name_config(-4)                                  = 'y'
+im_field_name_config(-3)                                  = 'NX'
+im_field_name_config(-2)                                  = 'x'
+im_field_name_config(-1)                                  = 'NTIME'
+im_field_name_config(0)                                   = 'dtg'                                                 ! Should match with the  im input file
+im_field_name_config(1)                                   = 'smb'                                                 ! Should match with the  im input file
+im_field_name_config(2)                                   = 'smb_continent'                                       ! Should match with the  im input file
+im_field_name_config(3)                                   = 'evaporation'                                         ! Should match with the  im input file
+im_field_name_config(4)                                   = 'precipitation'                                       ! Should match with the  im input file
+im_field_name_config(5)                                   = 'snowfall'                                            ! Should match with the  im input file
+im_field_name_config(6)                                   = 'runoff'                                              ! Should match with the  im input file
+im_field_name_config(7)                                   = 'refreeze'                                            ! Should match with the  im input file
+im_field_name_config(8)                                   = 'ice_surface_temperature'                             ! Should match with the  im input file
+im_field_name_config(9)                                   = 'air_temperature_at_2m'                               ! Should match with the  im input file
+
+gcm_field_unit_config(-4)                                 = 'degrees north'
+gcm_field_unit_config(-2)                                 = 'degrees east'
+gcm_field_unit_config(0)                                  = 'year'
+gcm_field_unit_config(1)                                  = 'mmweq'
+gcm_field_unit_config(2)                                  = 'mmweq'
+gcm_field_unit_config(3)                                  = 'mmweq'
+gcm_field_unit_config(4)                                  = 'mmweq'
+gcm_field_unit_config(5)                                  = 'mmweq'
+gcm_field_unit_config(6)                                  = 'mmweq'
+gcm_field_unit_config(7)                                  = 'mmweq'
+gcm_field_unit_config(8)                                  = 'Kelvin'
+gcm_field_unit_config(9)                                  = 'Kelvin'
+
+gcm_field_longname_config(-4)                             = 'latitude (degrees north)'
+gcm_field_longname_config(-2)                             = 'longitude (degrees east)'
+gcm_field_longname_config(0)                              = 'time (year)'
+gcm_field_longname_config(1)                              = 'surface mass balance (mmweq)'
+gcm_field_longname_config(2)                              = 'surface mass balance for continent only (mmweq)'
+gcm_field_longname_config(3)                              = 'evaporation (mmweq)'
+gcm_field_longname_config(4)                              = 'precipitation (mmweq)'
+gcm_field_longname_config(5)                              = 'snowfall (mmweq)'
+gcm_field_longname_config(6)                              = 'runoff (mmweq)'
+gcm_field_longname_config(7)                              = 'refreeze (mmweq)'
+gcm_field_longname_config(8)                              = 'ice surface temperature (Kelvin)'
+gcm_field_longname_config(9)                              = 'air temperature at 2 meter above ice surface (Kelvin)'
+
+field_which_determines_invalid_value_mask_config(1)       =  1
+field_which_determines_invalid_value_mask_config(2)       =  1
+field_which_determines_invalid_value_mask_config(3)       = -3
+field_which_determines_invalid_value_mask_config(4)       = -4
+field_which_determines_invalid_value_mask_config(5)       = -5
+field_which_determines_invalid_value_mask_config(6)       =  1
+field_which_determines_invalid_value_mask_config(7)       =  1
+field_which_determines_invalid_value_mask_config(8)       = -8
+field_which_determines_invalid_value_mask_config(9)       = -9
+
+invalid_input_value_config(1)                             = -9999
+invalid_input_value_config(2)                             = -9999
+invalid_input_value_config(6)                             = -9999
+invalid_input_value_config(7)                             = -9999
+
+!invalid_output_value_config(6)                            = 0
+!invalid_output_value_config(7)                            = 0
+
+gcm_created_filename_config                               = './forcing_fields_at_GCM_greenland_10x10km.nc'
+protect_file_overwriting_config                           = .FALSE.
+oblimap_message_level_config                              = 0
+/

@@ -1,0 +1,38 @@
+Compilation of the OBLIMAP 2.0 fortran source code:
+
+ Check which fortran compiler you are using. The default Makefile.include 
+ in the Makefile is
+  
+  Makefile.gfortran
+ 
+ However others can be included instead:
+  Makefile.gfortran-mp-4.9-mac
+  Makefile.gfortran-lisa
+  Makefile.ifort-lisa
+  Makefile.ftn-cca-ecmwf
+
+ In the Makefile.* one should check the NETCDF path, in our default this is:
+  
+  NETCDF_DIR = /usr/local
+ 
+ After these checks / adjustments you can compile the OBLIMAP source by
+ 
+  cd src/
+  make all
+  
+ Default running should be done from the  oblimap-package/  directory, for
+ instance with:
+
+  ./src/oblimap_gcm_to_im_program config-files/oblimap/ccsm-to-im/config_oblimap_ccsm_to_im_greenland
+
+ And for the reverse direction with:
+
+  ./src/oblimap_im_to_gcm_program config-files/oblimap/im-to-ccsm/config_oblimap_im_to_ccsm_greenland
+  
+ Or with the tiny script (which includes cpu profiling):
+
+  ./oblimap-to-and-fro-mapping.csh
+
+
+Thomas Reerink
+May 2016

@@ -1,0 +1,64 @@
+! ./src/oblimap_im_to_gcm_program config-files/oblimap/im-to-ccsm/config_oblimap_im_to_ccsm_greenland
+
+&CONFIG 
+NLON_config                                               =    128                                                ! The number of GCM grid points in the longitude direction
+NLAT_config                                               =     64                                                ! The number of GCM grid points in the latitude  direction
+
+NX_config                                                 =     76                                                ! The number of IM grid points in the x-direction
+NY_config                                                 =    141                                                ! The number of IM grid points in the y-direction
+dx_config                                                 =  20000                                                ! The           IM grid size   in the x-direction (in meter)
+dy_config                                                 =  20000                                                ! The           IM grid size   in the y-direction (in meter)
+
+lambda_M_config                                           =    320                                                ! The longitude coordinate of the middle point of projection (in degrees)
+phi_M_config                                              =     72                                                ! The latitude  coordinate of the middle point of projection (in degrees)
+alpha_stereographic_config                                =      7.5                                              ! alpha determines the standard parallel of the projection (in degrees)
+choice_projection_method_config                           = 'oblique_stereographic_projection' 
+
+scanning_mode_config                                      = .TRUE.
+scanned_projection_data_filename_config                   = 'oblimap-results/oblimap-scanned-projection-data/scanned-projection-data-im-to-ccsm-greenland.txt'
+!scan_search_block_size_config                             = 26
+R_search_interpolation_config                             = 125000
+shepard_exponent_config                                   = 2
+nearest_point_assignment_config                           = .FALSE.
+
+gcm_input_filename_config                                 = './data/ccsm/ccsm_example_dec_feb_pd.nc'
+gcm_record_range_config                                   = 1,1
+
+im_input_filename_config                                  = 'oblimap-results/im_greenland_Ts_MB_surface_Hs_A.nc'
+im_record_range_config                                    = 1,1
+
+number_of_mapped_fields_config                            = 3
+gcm_field_name_config(-4)                                 = 'lat'                                                 ! Should match with the gcm input file
+gcm_field_name_config(-2)                                 = 'lon'                                                 ! Should match with the gcm input file
+gcm_field_name_config(1)                                  = 'TS'                                                  ! Should match with the gcm input file
+gcm_field_name_config(2)                                  = 'Accumulation'                                        ! Should match with the gcm input file
+gcm_field_name_config(3)                                  = 'PHIS'                                                ! Should match with the gcm input file
+
+im_field_name_config(1)                                   = 'Ts'                                                  ! Should match with the  im input file
+im_field_name_config(2)                                   = 'MB_surface'                                          ! Should match with the  im input file
+im_field_name_config(3)                                   = 'Hs'                                                  ! Should match with the  im input file
+
+gcm_field_unit_config(-4)                                 = 'degrees north'
+gcm_field_unit_config(-2)                                 = 'degrees east'
+gcm_field_unit_config(1)                                  = 'Kelvin'
+gcm_field_unit_config(2)                                  = 'm/s weq'
+gcm_field_unit_config(3)                                  = 'm2/s2'
+
+gcm_field_longname_config(-4)                             = 'latitude (degrees north)'
+gcm_field_longname_config(-2)                             = 'longitude (degrees east)'
+gcm_field_longname_config(1)                              = 'surface temperature (Kelvin)'
+gcm_field_longname_config(2)                              = 'accumulation (m/s water equivalent)'
+gcm_field_longname_config(3)                              = 'Surface geopotential (m2/s2)'
+
+field_factor_config(1)                                    = 1
+field_factor_config(2)                                    = 2.883675993E-08
+field_factor_config(3)                                    = 9.81
+
+invalid_input_value_config(1)                             = -9999
+invalid_input_value_config(2)                             = -9999
+invalid_input_value_config(3)                             = -9999
+
+gcm_created_filename_config                               = 'oblimap-results/gcm_greenland_Ts_MB_surface_Hs_A.nc'
+protect_file_overwriting_config                           = .FALSE.
+oblimap_message_level_config                              = 0
+/

@@ -1,0 +1,97 @@
+ In the configuration files (config files) several fortran NAMELIST-options
+ can be specified. It is strongly recommended to use a config file and to
+ specify all the config variables for your experiment. However, all config
+ variables are initialised by a default value in the
+  src/oblimap_configuration_module.f90
+ in case no config file is used or in case a config variable is omitted in
+ the config file. Examples of config files can be found in the directory:
+  config-files/oblimap/
+
+ Each config variable and its useful range is listed below. The Maximum Number
+ of Fields (MNF) which can be mapped simultaneously is 100 by default, but can
+ be highered to any positive integer in
+  src/oblimap_configuration_module.f90
+ whereupon the OBLIMAP code has to be (re)compiled. The Maximum Number of 
+ Dimensions (MND) is a negative number to allocate space in these arrays 
+ for the names of the  dimensions and the dimesion variables, it is currently 
+ set to -7.
+
+ gcm_input_filename_config                        = any CHARACTER string (maximum of 256 characters)
+ im_input_filename_config                         = any CHARACTER string (maximum of 256 characters)
+ NLON_config                                      = any positive INTEGER
+ NLAT_config                                      = any positive INTEGER
+ NX_config                                        = any positive INTEGER
+ NY_config                                        = any positive INTEGER
+ dx_config                                        = any positive REAL
+ dy_config                                        = any positive REAL
+ choice_projection_method_config                  = 'oblique_stereographic_projection'
+                                                    'oblique_stereographic_projection_snyder'
+                                                    'oblique_stereographic_projection_ellipsoid_snyder'
+                                                    'oblique_lambert_equal-area_projection_snyder'
+                                                    'oblique_lambert_equal-area_projection_ellipsoid_snyder'
+                                                    'rotation_projection'
+ earth_radius_config                              = any positive REAL (meter)
+ ellipsoid_semi_major_axis_config                 = any positive REAL (meter)
+ ellipsoid_excentricity_config                    = any REAL between 0 and 1
+ lambda_M_config                                  = any REAL between   0 and 360 degrees
+ phi_M_config                                     = any REAL between -90 and  90 degrees
+ alpha_stereographic_config                       = any REAL between   0 and  90 degrees
+ theta_rotation_projection_config                 = any REAL between   0 and 360 degrees
+ shift_x_coordinate_rotation_projection_config    = any REAL (meter)
+ shift_y_coordinate_rotation_projection_config    = any REAL (meter)
+ enable_shift_im_grid_config                      = TRUE or FALSE
+ shift_x_coordinate_im_grid_config                = any REAL (meter)
+ shift_y_coordinate_im_grid_config                = any REAL (meter)
+ alternative_lambda_for_center_im_grid_config     = any REAL (degrees)
+ alternative_phi_for_center_im_grid_config        = any REAL (degrees)
+ unit_conversion_x_ax_config                      = any REAL
+ unit_conversion_y_ax_config                      = any REAL
+ use_prefabricated_im_grid_coordinates_config     = TRUE or FALSE
+ prefabricated_im_grid_filename_config            = any CHARACTER string (maximum of 256 characters)
+ scanning_mode_config                             = TRUE or FALSE
+ level_of_automatic_oblimap_scanning_config       = INTEGER in the range 0 to 5
+ data_set_is_cyclic_in_longitude_config           = TRUE or FALSE
+ choice_quadrant_method_config                    = TRUE or FALSE
+ R_search_interpolation_config                    = any positive REAL (meter)
+ scan_search_block_size_config                    = any INTEGER starting from -3 (where -3, -2 and -1 are special cases, -3 is default)
+ scan_search_block_size_step_config               = any positive INTEGER starting from 2 (with 2 the recommended default)
+ vincenty_method_for_ellipsoid_config             = TRUE or FALSE
+ scanned_projection_data_filename_config          = any CHARACTER string (maximum of 256 characters)
+ backward_scanned_projection_data_filename_config = any CHARACTER string (maximum of 256 characters)
+ oblimap_allocate_factor_config                   = any positive REAL
+ oblimap_message_level_config                     = INTEGER in the range 1 to 3
+ suppress_check_on_scan_parameters_config         = TRUE or FALSE
+ nearest_point_assignment_config                  = TRUE or FALSE
+ shepard_exponent_config                          = any positive REAL, usually 2
+ invalid_input_value_config                       = DIMENSION(  1:MNF): array with:  any REAL
+ invalid_output_value_config                      = DIMENSION(  1:MNF): array with:  any REAL
+ field_which_determines_invalid_value_mask_config = DIMENSION(  1:MNF): array with:  any INTEGER (if > 1, the field is masked mapped)
+ invalid_value_mask_criterion_config              = DIMENSION(  1:MNF): array with:  INTEGER in the range 1 to 2
+ gcm_record_range_config                          = DIMENSION(2): positive INTEGER's:
+                                                     format: starting desired record number, ending desired record number
+ im_record_range_config                           = DIMENSION(2): positive INTEGER's:
+                                                     format: starting desired record number, ending desired record number
+ number_of_vertical_layers_config                 = any positive INTEGER (default 1)
+ number_of_mapped_fields_config                   = any positive INTEGER, i.e. up to MNF = 100, but MNF can be increased in 
+                                                     oblimap_configuration_module.f90
+ ignore_reading_pre_mapped_fields_config          = DIMENSION(MND:MNF): array with:  TRUE or FALSE
+ gcm_field_name_config                            = DIMENSION(MND:MNF): array with:  any CHARACTER string (maximum of 128 characters)
+ gcm_field_unit_config                            = DIMENSION(MND:MNF): array with:  any CHARACTER string (maximum of 128 characters)
+ gcm_field_longname_config                        = DIMENSION(MND:MNF): array with:  any CHARACTER string (maximum of 256 characters)
+ im_field_name_config                             = DIMENSION(MND:MNF): array with:  any CHARACTER string (maximum of 128 characters)
+ im_field_unit_config                             = DIMENSION(MND:MNF): array with:  any CHARACTER string (maximum of 128 characters)
+ im_field_longname_config                         = DIMENSION(MND:MNF): array with:  any CHARACTER string (maximum of 256 characters)
+ prefabricated_im_grid_field_name_config          = DIMENSION(MND:MNF): array with:  any CHARACTER string (maximum of 128 characters)
+ field_factor_config                              = DIMENSION(  0:MNF): array with:  any REAL
+ field_shift_config                               = DIMENSION(  0:MNF): array with:  any REAL
+ gcm_created_filename_config                      = any CHARACTER string (maximum of 256 characters)
+ im_created_filename_config                       = any CHARACTER string (maximum of 256 characters)
+ reduce_dummy_dimensions_config                   = TRUE or FALSE
+ use_double_instead_of_float_in_netcdf            = TRUE or FALSE
+ synchronize_netcdf_writing                       = TRUE or FALSE
+ protect_file_overwriting_config                  = TRUE or FALSE
+ enable_color_messaging_in_terminal               = TRUE or FALSE
+
+
+ Thomas Reerink
+ May 2016
