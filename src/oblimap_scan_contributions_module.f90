@@ -1352,7 +1352,7 @@ CONTAINS
       WRITE(UNIT=unit_number, FMT='( A        )') '# '
      CASE('oblique_stereographic_projection_ellipsoid_snyder','oblique_lambert_equal-area_projection_ellipsoid_snyder')
       WRITE(UNIT=unit_number, FMT='( A, E24.16)') '#  ellipsoid_semi_major_axis_config                          = ', C%a
-      WRITE(UNIT=unit_number, FMT='( A, E24.16)') '#  ellipsoid_excentricity_config                             = ', C%e
+      WRITE(UNIT=unit_number, FMT='( A, E24.16)') '#  ellipsoid_eccentricity_config                             = ', C%e
      END SELECT
     END IF
     WRITE(UNIT=unit_number,   FMT='( A, A     )') '#  choice_projection_method_config                           = ', TRIM(C%choice_projection_method)
@@ -1409,7 +1409,7 @@ CONTAINS
     CLOSE(UNIT=unit_number)
 
     ! Appending the content to the header:
-    CALL SYSTEM('more '//TRIM(C%filename_scanned_content)//' >> '//TRIM(C%scanned_projection_data_filename))
+    CALL SYSTEM('cat '//TRIM(C%filename_scanned_content)//' >> '//TRIM(C%scanned_projection_data_filename))
     CALL SYSTEM('rm -f '//TRIM(C%filename_scanned_content))
   END SUBROUTINE write_the_scanned_projection_data_file
 

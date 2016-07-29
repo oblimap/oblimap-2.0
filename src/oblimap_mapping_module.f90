@@ -271,7 +271,7 @@ CONTAINS
        CASE('rotation_projection','oblique_stereographic_projection','oblique_stereographic_projection_snyder','oblique_lambert_equal-area_projection_snyder')
         READ(UNIT=118, FMT='(A)') end_of_line
        CASE('oblique_stereographic_projection_ellipsoid_snyder','oblique_lambert_equal-area_projection_ellipsoid_snyder')
-        CALL read_and_compare_header_line_with_real(  118, C%e                                                , 'ellipsoid_excentricity_config')
+        CALL read_and_compare_header_line_with_real(  118, C%e                                                , 'ellipsoid_eccentricity_config')
        END SELECT
       CASE(27)
        CALL read_and_compare_header_line_with_string( 118, C%choice_projection_method                         , 'choice_projection_method_config')

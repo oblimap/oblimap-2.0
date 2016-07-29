@@ -10,6 +10,7 @@ Compilation of the OBLIMAP 2.0 fortran source code:
   Makefile.gfortran-lisa
   Makefile.ifort-lisa
   Makefile.ftn-cca-ecmwf
+  Makefile.ifort-stampede
 
  In the Makefile.* one should check the NETCDF path, in our default this is:
   
@@ -34,5 +35,8 @@ Compilation of the OBLIMAP 2.0 fortran source code:
   ./oblimap-to-and-fro-mapping.csh
 
 
+ The OBLIMAP User Guide provides a more extended description:
+  https://github.com/oblimap/oblimap-2.0/blob/master/documentation/oblimap-user-guide.pdf
+
 Thomas Reerink
-May 2016
+July 2016

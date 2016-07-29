@@ -57,6 +57,7 @@ include Makefile.gfortran
 #include Makefile.ifort-lisa
 #include Makefile.ifort-staff.science
 #include Makefile.ftn-cca-ecmwf
+#include Makefile.ifort-stampede
 
 # The OBJ_PATH and the MOD_PATH are defined:
 OBJ_PATH = object-files

@@ -139,7 +139,7 @@ MODULE oblimap_configuration_module
       ! ===================
       REAL(dp)                                   :: earth_radius_config                              = 6.371221E6_dp                                        ! config variable   ! Earth Radius [m], earth_radius mean IUGG (2a +b ) / 3 = 6.371009E6_dp
       REAL(dp)                                   :: ellipsoid_semi_major_axis_config                 = 6.378137E6_dp                                        ! config variable   ! The semi-major axis of the Earth Ellipsoid [m], a in Snyder (1987) at p. 160; default WGS84 value for a = 6378137.0           meter
-      REAL(dp)                                   :: ellipsoid_excentricity_config                    = 0.08181919084262149_dp                               ! config variable   ! The exentricity     of the Earth Ellipsoid [m], e in Snyder (1987) at p. 160, default WGS84 value for e = 0.08181919084262149 meter
+      REAL(dp)                                   :: ellipsoid_eccentricity_config                    = 0.08181919084262149_dp                               ! config variable   ! The exentricity     of the Earth Ellipsoid [m], e in Snyder (1987) at p. 160, default WGS84 value for e = 0.08181919084262149 meter
 
       LOGICAL                                    :: use_double_instead_of_float_in_netcdf_config     = .FALSE.                                              ! config variable
 
@@ -277,10 +277,27 @@ MODULE oblimap_configuration_module
         CHARACTER(LEN=24)                          :: OBLIMAP_ERROR                       ! The allocation is exactly, so it is possible to omit a TRIM on this string
         CHARACTER(LEN=26)                          :: OBLIMAP_WARNING                     ! The allocation is exactly, so it is possible to omit a TRIM on this string
         CHARACTER(LEN=25)                          :: OBLIMAP_ADVICE                      ! The allocation is exactly, so it is possible to omit a TRIM on this string
+
+        INTEGER                                    :: processor_id_process_dependent
+        INTEGER                                    :: number_of_processors
+        INTEGER                                    :: max_nr_of_lines_per_partition_block ! The maximum numberr of lines per partition block, in a MPI parallel approach
+        INTEGER                                    :: psi_process_dependent               ! Partition starting index, in a MPI parallel approach
       END TYPE constants_type
 
       ! C is the 'struct' containing all the Constants from the config file and/or the defaults
       TYPE(constants_type), SAVE :: C
+
+
+      ! This TYPE contains variables which are related to the parallel OBLIMAP implementation using MPI.
+      TYPE parallel_type
+        INTEGER :: processor_id_process_dependent
+        INTEGER :: number_of_processors
+        INTEGER :: max_nr_of_lines_per_partition_block ! The maximum numberr of lines per partition block
+        INTEGER :: psi_process_dependent               ! Partition starting index
+      END TYPE parallel_type
+
+      ! PAR is the 'struct' containing the parallel OBLIMAP implementation using MPI.
+      TYPE(parallel_type), SAVE :: PAR
 
 
       TYPE oblimap_scan_parameter_type
@@ -449,7 +466,7 @@ CONTAINS
                      unit_conversion_y_ax_config                               , &
                      earth_radius_config                                       , &
                      ellipsoid_semi_major_axis_config                          , &
-                     ellipsoid_excentricity_config                             , &
+                     ellipsoid_eccentricity_config                             , &
                      use_double_instead_of_float_in_netcdf_config              , &
                      synchronize_netcdf_writing_config                         , &
                      protect_file_overwriting_config                           , &
@@ -852,7 +869,7 @@ CONTAINS
     C%large_distance                                 = 1.0E8_dp
 
     ! Description of the numbers which are used for the WGS84 ellipsoid:
-    ! The relation between the flattening f and the excentricity is given in Snyder (1987) p. 13:
+    ! The relation between the flattening f and the eccentricity is given in Snyder (1987) p. 13:
     !  e^2 = 2f - f^2  or  f = 1 - (1 - e^2)^(0.5)
     ! The relation between the flattening f and the equatorial axis a and the polar axis b is
     ! given in Snyder (1987) p. 12 in the table description:
@@ -863,11 +880,11 @@ CONTAINS
     !  http://en.wikipedia.org/wiki/Earth_ellipsoid        :      WGS 1984          6378137          6356752.314245179    298.257223563
     !  https://en.wikipedia.org/wiki/World_Geodetic_System :      WGS 1984          6378137          6356752.314245       298.257223563
     ! Note that:
-    !  the excentricity C%e below is calculted with python by e = (2*f - f**2)**0.5 = 0.08181919084262149 with f = 1 / 298.257223563
+    !  the eccentricity C%e below is calculted with python by e = (2*f - f**2)**0.5 = 0.08181919084262149 with f = 1 / 298.257223563
     !  the semi-minor axis b      is calculted with python by b = a*(1 - f)         = 6356752.314245179   with f = 1 / 298.257223563 and a = 6378137
 
     C%a                                              = ellipsoid_semi_major_axis_config       ! The semi-major axis or the equatorial radius of the ellipsoid (in case of the Earth), a in Snyder (1987) at p. 160; default WGS84 value for a = 6.378137E6
-    C%e                                              = ellipsoid_excentricity_config          ! The excentricity of the ellipsoid, e in Snyder (1987) at p. 160, WGS84, see Snyder (1987) p. 13, default WGS84 value for e = 0.08181919084262149
+    C%e                                              = ellipsoid_eccentricity_config          ! The eccentricity of the ellipsoid, e in Snyder (1987) at p. 160, WGS84, see Snyder (1987) p. 13, default WGS84 value for e = 0.08181919084262149
     C%ellipsoid_flattening                           = 1._dp - (1._dp - C%e**2)**0.5_dp       ! Flattening of the ellipsoid, f = 1 - (1 - e**2)**0.5 in Snyder (1987) at p. 13, WGS84 value for f = 0.0033528106647474805
     C%ellipsoid_semi_minor_axis                      = C%a * (1._dp - C%ellipsoid_flattening) ! The semi-minor axis or the polar radius of the ellipsoid (in case of the Earth) b in Snyder (1987) at p. 160, b = a(1-f) given in Snyder (1987) p. 12 in the table description; WGS84 value for b = 6356752.314245179 meter
 

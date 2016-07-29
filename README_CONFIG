@@ -32,7 +32,7 @@
                                                     'rotation_projection'
  earth_radius_config                              = any positive REAL (meter)
  ellipsoid_semi_major_axis_config                 = any positive REAL (meter)
- ellipsoid_excentricity_config                    = any REAL between 0 and 1
+ ellipsoid_eccentricity_config                    = any REAL between 0 and 1
  lambda_M_config                                  = any REAL between   0 and 360 degrees
  phi_M_config                                     = any REAL between -90 and  90 degrees
  alpha_stereographic_config                       = any REAL between   0 and  90 degrees
@@ -93,5 +93,8 @@
  enable_color_messaging_in_terminal               = TRUE or FALSE
 
 
+ The OBLIMAP User Guide provides a more extended description:
+  https://github.com/oblimap/oblimap-2.0/blob/master/documentation/oblimap-user-guide.pdf
+
  Thomas Reerink
- May 2016
+ July 2016
