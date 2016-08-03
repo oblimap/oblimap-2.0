@@ -11,6 +11,7 @@ Reerink, T. J., Kliphuis, M. A., van de Wal, R. S. W.: Mapping technique of clim
 
 
 The OBLIMAP User Guide can be cited as follows:
+
 Reerink, T. J.: OBLIMAP User Guide, version 1.0, accompanying OBLIMAP 2.0, Tech. rep., Institute for Marine and Atmospheric research Utrecht, Utrecht University, 3508 TA Utrecht, The Netherlands, https://github.com/oblimap/oblimap-2.0/blob/master/documentation/oblimap-user-guide.pdf, 2016.
 
 
