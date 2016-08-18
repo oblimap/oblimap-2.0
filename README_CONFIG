@@ -56,8 +56,8 @@
  scan_search_block_size_config                    = any INTEGER starting from -3 (where -3, -2 and -1 are special cases, -3 is default)
  scan_search_block_size_step_config               = any positive INTEGER starting from 2 (with 2 the recommended default)
  vincenty_method_for_ellipsoid_config             = TRUE or FALSE
- scanned_projection_data_filename_config          = any CHARACTER string (maximum of 256 characters)
- backward_scanned_projection_data_filename_config = any CHARACTER string (maximum of 256 characters)
+ sid_filename_config                              = any CHARACTER string (maximum of 256 characters)
+ backward_sid_filename_config                     = any CHARACTER string (maximum of 256 characters)
  oblimap_allocate_factor_config                   = any positive REAL
  oblimap_message_level_config                     = INTEGER in the range 1 to 3
  suppress_check_on_scan_parameters_config         = TRUE or FALSE
@@ -97,4 +97,4 @@
   https://github.com/oblimap/oblimap-2.0/blob/master/documentation/oblimap-user-guide.pdf
 
  Thomas Reerink
- July 2016
+ August 2016

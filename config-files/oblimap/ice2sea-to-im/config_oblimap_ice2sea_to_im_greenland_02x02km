@@ -16,7 +16,7 @@ alpha_stereographic_config                                =      7.1            
 choice_projection_method_config                           = 'oblique_stereographic_projection_ellipsoid_snyder'
 
 scanning_mode_config                                      = .TRUE.
-scanned_projection_data_filename_config                   = 'oblimap-results/oblimap-scanned-projection-data/scanned-projection-data-ice2sea-to-im-greenland-02x02km.txt'
+sid_filename_config                                       = './oblimap-sid-files/sid-file-ice2sea-to-im-greenland-02x02km.txt'
 !scan_search_block_size_config                             = 3
 R_search_interpolation_config                             = 1200
 shepard_exponent_config                                   = 2

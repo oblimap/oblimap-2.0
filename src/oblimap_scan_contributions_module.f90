@@ -47,7 +47,7 @@ MODULE oblimap_scan_contributions_module
     REAL(dp) :: distance      ! distance of this nearest point relative to the IM point (m,n)
   END TYPE triplet
 
-  ! In case there is no contributions, the distance is set to a huge number:C%large_distance = 1.0E8_dp, and the indices to -999999
+  ! In case there are no contributions, the distance is set to a huge number: C%large_distance = 1.0E8_dp, and the indices to -999999
  !TYPE(triplet), PARAMETER :: no_contribution = triplet(-999999, -999999, 1.0E8_dp)
 
 
@@ -63,7 +63,7 @@ CONTAINS
     ! the coordinates of the GCM grid points are projected with the oblique stereographic projection to the IM coordinates.
     ! Thereafter with these projected coordinates the distances of the projected points relative to each target grid point
     ! are calculated and used to select the nearest contributing grid points. The GCM-grid indices of the contributing points
-    ! and the relative distance to 'their' target grid point are stored by writing them to the C%scanned_projection_data_filename
+    ! and the relative distance to 'their' target grid point are stored by writing them to the C%sid_filename
     ! file. With the indices and the distances of the contributing points the GCM fields can be mapped fast and simultaneously
     ! on to the IM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
@@ -135,8 +135,8 @@ CONTAINS
      number_of_situations = 1
     END IF
 
-    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the scanned file:
-    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_scanned_content))
+    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the SID file:
+    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_sid_content))
 
     ! For each IM grid point the four nearest projected GCM points are determined:
     WRITE(UNIT=*,FMT='(A)') '  The progress of the OBLIMAP scanning phase is at:'
@@ -400,11 +400,11 @@ CONTAINS
     IF(C%scan_search_block_size == -3) highest_scan_search_block_size = highest_scan_search_block_size - 2
     IF(C%oblimap_message_level > 0) WRITE(UNIT=*,FMT='(/A, I6/)') ' The highest dynamic scan_search_block_size was: ', highest_scan_search_block_size
 
-    ! Closing the the scanned file:
+    ! Closing the the SID file:
     CLOSE(UNIT=C%unit_scanning_file_content)
 
     ! Output: -
-    CALL write_the_scanned_projection_data_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions = 4, gcm_to_im_direction = .TRUE.)
+    CALL write_sid_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions = 4, gcm_to_im_direction = .TRUE.)
   END SUBROUTINE scan_with_quadrant_method_gcm_to_im
 
 
@@ -414,7 +414,7 @@ CONTAINS
     ! the coordinates of the GCM grid points are projected with the oblique stereographic projection to the IM coordinates.
     ! Thereafter with these projected coordinates the distances of the projected points relative to each target grid point
     ! are calculated and used to select the nearest contributing grid points. The GCM-grid indices of the contributing points
-    ! and the relative distance to 'their' target grid point are stored by writing them to the C%scanned_projection_data_filename
+    ! and the relative distance to 'their' target grid point are stored by writing them to the C%sid_filename
     ! file. With the indices and the distances of the contributing points the GCM fields can be mapped fast and simultaneously
     ! on to the IM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
@@ -499,8 +499,8 @@ CONTAINS
      number_of_situations = 1
     END IF
 
-    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the scanned file:
-    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_scanned_content))
+    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the SID file:
+    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_sid_content))
 
     ! For each IM grid point the nearest projected GCM points are determined:
     WRITE(UNIT=*,FMT='(A)') '  The progress of the OBLIMAP scanning phase is at:'
@@ -756,11 +756,11 @@ CONTAINS
 
     DEALLOCATE(contribution)
 
-    ! Closing the the scanned file:
+    ! Closing the the SID file:
     CLOSE(UNIT=C%unit_scanning_file_content)
 
     ! Output: -
-    CALL write_the_scanned_projection_data_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions, gcm_to_im_direction = .TRUE.)
+    CALL write_sid_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions, gcm_to_im_direction = .TRUE.)
 
     IF(maximum_contributions > max_size) THEN
      WRITE(UNIT=*, FMT='(/3A       )') C%OBLIMAP_ERROR, ' scan_with_radius_method_gcm_to_im(): in the config file: ', TRIM(C%config_filename)
@@ -782,7 +782,7 @@ CONTAINS
     ! coordinates. Thereafter with these projected coordinates the distances of the projected points relative to each target
     ! grid point are calculated and used to select the nearest contributing grid points. The IM-grid indices of the
     ! contributing points and the relative distance to 'their' target grid point are stored by writing them to the
-    ! C%scanned_projection_data_filename file. With the indices and the distances of the contributing points the IM fields can be
+    ! C%sid_filename file. With the indices and the distances of the contributing points the IM fields can be
     ! mapped fast and simultaneously on to the GCM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
     IMPLICIT NONE
@@ -842,8 +842,8 @@ CONTAINS
 
     amount_of_mapped_points      = 0
 
-    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the scanned file:
-    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_scanned_content))
+    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the SID file:
+    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_sid_content))
 
     ! For each GCM grid point the four nearest projected IM points are determined:
     WRITE(UNIT=*,FMT='(A)') '  The progress of the OBLIMAP scanning phase is at:'
@@ -1010,11 +1010,11 @@ CONTAINS
     IF(C%scan_search_block_size == -3) highest_scan_search_block_size = highest_scan_search_block_size - 2
     IF(C%oblimap_message_level > 0) WRITE(UNIT=*,FMT='(/A, I6/)') ' The highest dynamic scan_search_block_size was: ', highest_scan_search_block_size
 
-    ! Closing the the scanned file:
+    ! Closing the the SID file:
     CLOSE(UNIT=C%unit_scanning_file_content)
 
     ! Output: -
-    CALL write_the_scanned_projection_data_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions = 4, gcm_to_im_direction = .FALSE.)
+    CALL write_sid_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions = 4, gcm_to_im_direction = .FALSE.)
   END SUBROUTINE scan_with_quadrant_method_im_to_gcm
 
 
@@ -1025,7 +1025,7 @@ CONTAINS
     ! coordinates. Thereafter with these projected coordinates the distances of the projected points relative to each target
     ! grid point are calculated and used to select the nearest contributing grid points. The IM-grid indices of the
     ! contributing points and the relative distance to 'their' target grid point are stored by writing them to the
-    ! C%scanned_projection_data_filename file. With the indices and the distances of the contributing points the IM fields can be
+    ! C%sid_filename file. With the indices and the distances of the contributing points the IM fields can be
     ! mapped fast and simultaneously on to the GCM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
     IMPLICIT NONE
@@ -1097,8 +1097,8 @@ CONTAINS
 
     amount_of_mapped_points      = 0
 
-    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the scanned file:
-    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_scanned_content))
+    ! Opening the file to which the coordinates of the nearest projected points are written, which will be the content of the SID file:
+    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_sid_content))
 
     ! For each GCM grid point the nearest projected IM points are determined:
     WRITE(UNIT=*,FMT='(A)') '  The progress of the OBLIMAP scanning phase is at:'
@@ -1259,11 +1259,11 @@ CONTAINS
 
     DEALLOCATE(contribution)
 
-    ! Closing the the scanned file:
+    ! Closing the the SID file:
     CLOSE(UNIT=C%unit_scanning_file_content)
 
     ! Output: -
-    CALL write_the_scanned_projection_data_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions, gcm_to_im_direction = .FALSE.)
+    CALL write_sid_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions, gcm_to_im_direction = .FALSE.)
 
     IF(maximum_contributions > max_size) THEN
      WRITE(UNIT=*, FMT='(/3A       )') C%OBLIMAP_ERROR, ' scan_with_radius_method_im_to_gcm(): in the config file: ', TRIM(C%config_filename)
@@ -1278,8 +1278,8 @@ CONTAINS
   ! SUPPORTING ROUTINES
   ! --------------------
 
-  SUBROUTINE write_the_scanned_projection_data_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions, gcm_to_im_direction)
-    ! This routine writes the header of the scanned file: the C%scanned_projection_data_filename file.
+  SUBROUTINE write_sid_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions, gcm_to_im_direction)
+    ! This routine writes the SID file (the file which contains the scanned indices and distances).
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
     IMPLICIT NONE
 
@@ -1294,10 +1294,10 @@ CONTAINS
     ! Local variables:
     INTEGER                                        :: unit_number = 107
 
-    ! Opening the scanned file:
-    OPEN(UNIT=unit_number, FILE=TRIM(C%scanned_projection_data_filename))
+    ! Opening the SID file:
+    OPEN(UNIT=unit_number, FILE=TRIM(C%sid_filename))
 
-    ! Writing the header of the C%scanned_projection_data_filename file:
+    ! Writing the header of the C%sid_filename file:
     WRITE(UNIT=unit_number,   FMT='( A        )') '# Do not remove this header. The data format of this file is:'
     IF(gcm_to_im_direction) THEN
      WRITE(UNIT=unit_number,  FMT='( A        )') '#  m  n  N  N(i  j  distance)'
@@ -1322,7 +1322,7 @@ CONTAINS
      WRITE(UNIT=unit_number,  FMT='(2A        )') '# This file is created by:  ../src/oblimap_im_to_gcm_program ', TRIM(C%config_filename)
     END IF
     WRITE(UNIT=unit_number,   FMT='( A        )') '# '
-    WRITE(UNIT=unit_number,   FMT='( A        )') '# Summary of the OBLIMAP scanning parameters:'
+    WRITE(UNIT=unit_number,   FMT='( A        )') '# Summary of the OBLIMAP scan parameters:'
     WRITE(UNIT=unit_number,   FMT='( A        )') '# '
     IF(gcm_to_im_direction) THEN
      WRITE(UNIT=unit_number,  FMT='( A, A     )') '#  gcm_input_filename_config                                 = ', TRIM(C%gcm_input_filename)
@@ -1405,13 +1405,13 @@ CONTAINS
     END IF
     WRITE(UNIT=unit_number,   FMT='( A        )') '# '
 
-    ! Closing the the scanned file:
+    ! Closing the the SID file:
     CLOSE(UNIT=unit_number)
 
     ! Appending the content to the header:
-    CALL SYSTEM('cat '//TRIM(C%filename_scanned_content)//' >> '//TRIM(C%scanned_projection_data_filename))
-    CALL SYSTEM('rm -f '//TRIM(C%filename_scanned_content))
-  END SUBROUTINE write_the_scanned_projection_data_file
+    CALL SYSTEM('cat '//TRIM(C%filename_sid_content)//' >> '//TRIM(C%sid_filename))
+    CALL SYSTEM('rm -f '//TRIM(C%filename_sid_content))
+  END SUBROUTINE write_sid_file
 
 
 

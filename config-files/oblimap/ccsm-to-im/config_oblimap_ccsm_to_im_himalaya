@@ -15,7 +15,7 @@ alpha_stereographic_config                                =     14.5            
 choice_projection_method_config                           = 'oblique_stereographic_projection' 
 
 scanning_mode_config                                      = .TRUE.
-scanned_projection_data_filename_config                   = 'oblimap-results/oblimap-scanned-projection-data/scanned-projection-data-ccsm-to-im-himalaya.txt'
+sid_filename_config                                       = './oblimap-sid-files/sid-file-ccsm-to-im-himalaya.txt'
 !scan_search_block_size_config                             = 2
 R_search_interpolation_config                             = 16000
 shepard_exponent_config                                   = 2

@@ -119,8 +119,8 @@ MODULE oblimap_configuration_module
       REAL(dp)                                   :: R_search_interpolation_config                    = 16000.0_dp                                           ! config variable
       INTEGER                                    :: scan_search_block_size_config                    = -3                                                   ! config variable
       INTEGER                                    :: scan_search_block_size_step_config               = 2                                                    ! config variable
-      CHARACTER(LEN=256)                         :: scanned_projection_data_filename_config          = 'scanned-projection-data-no-name.txt'                ! config variable
-      CHARACTER(LEN=256)                         :: backward_scanned_projection_data_filename_config = 'backward-scanned-projection-data-no-name.txt'       ! config variable
+      CHARACTER(LEN=256)                         :: sid_filename_config                              = 'sid-no-name.txt'                                    ! config variable 
+      CHARACTER(LEN=256)                         :: backward_sid_filename_config                     = 'backward-sid-no-name.txt'                           ! config variable 
       CHARACTER(LEN=256)                         :: im_input_filename_config                         = 'im-input-no-name.nc'                                ! config variable
       LOGICAL                                    :: use_prefabricated_im_grid_coordinates_config     = .FALSE.                                              ! config variable
       CHARACTER(LEN=256)                         :: prefabricated_im_grid_filename_config            = 'prefabricated-im-grid-coordinates-no-name.nc'       ! config variable
@@ -223,8 +223,8 @@ MODULE oblimap_configuration_module
         INTEGER                                    :: scan_search_block_size_step
         LOGICAL                                    :: choice_quadrant_method
         REAL(dp)                                   :: R_search_interpolation
-        CHARACTER(LEN=256)                         :: scanned_projection_data_filename
-        CHARACTER(LEN=256)                         :: backward_scanned_projection_data_filename
+        CHARACTER(LEN=256)                         :: sid_filename
+        CHARACTER(LEN=256)                         :: backward_sid_filename
         CHARACTER(LEN=256)                         :: im_input_filename
         LOGICAL                                    :: use_prefabricated_im_grid_coordinates
         CHARACTER(LEN=256)                         :: prefabricated_im_grid_filename
@@ -234,7 +234,7 @@ MODULE oblimap_configuration_module
         LOGICAL                                    :: reduce_dummy_dimensions
         LOGICAL                                    :: full_scanning_mode
         INTEGER                                    :: unit_scanning_file_content
-        CHARACTER(LEN=256)                         :: filename_scanned_content
+        CHARACTER(LEN=256)                         :: filename_sid_content
         REAL(dp)                                   :: large_distance
         REAL(dp)                                   :: fls_latitude_border   = 85._dp  ! full longitude scan for high latitude grid rows near the pole
         INTEGER                                    :: fls_grid_range        =  2
@@ -453,8 +453,8 @@ CONTAINS
                      scan_search_block_size_step_config                        , &
                      choice_quadrant_method_config                             , &
                      R_search_interpolation_config                             , &
-                     scanned_projection_data_filename_config                   , &
-                     backward_scanned_projection_data_filename_config          , &
+                     sid_filename_config                                       , &
+                     backward_sid_filename_config                              , &
                      im_input_filename_config                                  , &
                      use_prefabricated_im_grid_coordinates_config              , &
                      prefabricated_im_grid_filename_config                     , &
@@ -843,8 +843,8 @@ CONTAINS
     C%scan_search_block_size_step                    = scan_search_block_size_step_config
     C%choice_quadrant_method                         = choice_quadrant_method_config
     C%R_search_interpolation                         = R_search_interpolation_config
-    C%scanned_projection_data_filename               = scanned_projection_data_filename_config
-    C%backward_scanned_projection_data_filename      = backward_scanned_projection_data_filename_config
+    C%sid_filename                                   = sid_filename_config
+    C%backward_sid_filename                          = backward_sid_filename_config
     C%im_input_filename                              = im_input_filename_config
     C%use_prefabricated_im_grid_coordinates          = use_prefabricated_im_grid_coordinates_config
     C%prefabricated_im_grid_filename                 = prefabricated_im_grid_filename_config
@@ -863,7 +863,7 @@ CONTAINS
 
     ! Unit used for the temporal file containing the fast input file content:
     C%unit_scanning_file_content                     = 14111984
-    C%filename_scanned_content                       = 'content_scanned_file.txt'
+    C%filename_sid_content                           = 'content_sid_file.txt'
 
     ! A predefined large distance (more then the earth circumference) used to initialize distances when searching the nearest projected points:
     C%large_distance                                 = 1.0E8_dp

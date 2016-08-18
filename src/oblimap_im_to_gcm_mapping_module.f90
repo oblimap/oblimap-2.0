@@ -95,7 +95,7 @@ CONTAINS
           oblimap_read_netcdf_fields, oblimap_write_netcdf_fields, oblimap_close_netcdf_file, reduce_dummy_dimensions
     USE oblimap_scan_contributions_module, ONLY: make_mapping_participation_mask, scan_with_radius_method_im_to_gcm, scan_with_quadrant_method_im_to_gcm, &
           shifting_center_im_grid, determining_scan_parameters
-    USE oblimap_mapping_module, ONLY: scanned_projection_data, reading_the_scanned_projection_data, mapping, finalize_reading_the_scanned_projection_data
+    USE oblimap_mapping_module, ONLY: oblimap_ddo_type, oblimap_read_sid_file, oblimap_mapping, oblimap_deallocate_ddo
     IMPLICIT NONE
 
     ! Local variables:
@@ -116,7 +116,7 @@ CONTAINS
     TYPE(oblimap_netcdf_file_type)                                                           :: im_netcdf_file
     TYPE(oblimap_netcdf_file_type)                                                           :: initial_gcm_netcdf_file
     TYPE(oblimap_netcdf_file_type)                                                           :: created_gcm_netcdf_file
-    TYPE(scanned_projection_data)                                                            :: scanned_contributions            ! A 'struct' containing all the scanned contributions
+    TYPE(oblimap_ddo_type)                                                                   :: oblimap_ddo                      ! The DDO containing all the scanned contributions
     TYPE(oblimap_scan_parameter_type)                                                        :: advised_scan_parameter
 
 
@@ -158,7 +158,7 @@ CONTAINS
     CALL make_mapping_participation_mask(x_coordinates_of_im_grid_points, y_coordinates_of_im_grid_points, lon_gcm, lat_gcm, mapping_participation_mask)
 
 
-    ! Ahead of the mapping, the scanning has to be done. In case that the file C%scanned_projection_data_filename exists,
+    ! Ahead of the mapping, the scanning has to be done. In case that the file C%sid_filename exists,
     ! the scanning phase can be omitted because this file contains the scanned projection data. This file contains for each
     ! target grid point the coordinates and the distances between the contributing points and the target point. These
     ! coordinates and distances are used for the field interpolation during the mapping phase.
@@ -169,18 +169,18 @@ CONTAINS
     ! point relative to the target point).
     IF(C%scanning_mode) THEN
      IF(C%choice_quadrant_method) THEN
-      ! Output: the C%scanned_projection_data_filename is file created
+      ! Output: the C%sid_filename is file created
       CALL scan_with_quadrant_method_im_to_gcm(mapping_participation_mask, x_coordinates_of_im_grid_points, y_coordinates_of_im_grid_points, lon_gcm, lat_gcm, advised_scan_parameter)
      ELSE
-      ! Output: the C%scanned_projection_data_filename file is created
+      ! Output: the C%sid_filename file is created
       CALL scan_with_radius_method_im_to_gcm(mapping_participation_mask, x_coordinates_of_im_grid_points, y_coordinates_of_im_grid_points, lon_gcm, lat_gcm, advised_scan_parameter)
      END IF
     END IF
 
 
-    ! Reading the contributions of the scanned projection data into a struct:
-    ! Output: scanned_contributions
-    CALL reading_the_scanned_projection_data(C%scanned_projection_data_filename, scanned_contributions)
+    ! Reading the contributions of the scanned projection data into the Dynamic Data Object (DDO):
+    ! Output: oblimap_ddo
+    CALL oblimap_read_sid_file(C%sid_filename, oblimap_ddo)
 
     ! Output: -
     CALL create_netcdf_for_gcm_grid(lon_gcm, lat_gcm, im_netcdf_file, created_gcm_netcdf_file)
@@ -211,10 +211,10 @@ CONTAINS
      END DO
 
      ! The IM extended fields are mapped (= projected + interpolated) on the GCM grid. For each target grid point the coordinates and
-     ! the relative distances of the nearest projected points are stored in the C%scanned_projection_data_filename file, these are
+     ! the relative distances of the nearest projected points are stored in the C%sid_filename file, these are
      ! used here to map the fields:
      ! Output: mapped_gcm_field
-     CALL mapping(scanned_contributions, C%NX, C%NY, C%NLON, C%NLAT, mask_of_invalid_contributions, im_field, mapped_gcm_field)
+     CALL oblimap_mapping(oblimap_ddo, C%NX, C%NY, C%NLON, C%NLAT, mask_of_invalid_contributions, im_field, mapped_gcm_field)
 
      ! Compose the fields which are given back to GCM. Part of these fields (the coordinates with mapping_participation_mask == 0) are
      ! the same as the original GCM fields: initial_gcm_field_*, and the rest of them equal the mapped values as in mapped_gcm_field_*.
@@ -269,7 +269,7 @@ CONTAINS
     WRITE(UNIT=*, FMT='(/3A/2A/)') ' Finished! The file  ', TRIM(C%gcm_created_filename), '  is created. Which can be viewed by:', '  ncview ', TRIM(C%gcm_created_filename)
 
     ! Output: -
-    CALL finalize_reading_the_scanned_projection_data(scanned_contributions)
+    CALL oblimap_deallocate_ddo(oblimap_ddo)
 
   END SUBROUTINE oblimap_im_to_gcm_mapping
 

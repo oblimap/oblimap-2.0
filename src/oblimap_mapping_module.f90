@@ -41,26 +41,23 @@ MODULE oblimap_mapping_module
   USE oblimap_configuration_module, ONLY: dp
   IMPLICIT NONE
 
-  TYPE scanned_projection_data
-    INTEGER                               :: maximum_contributions     ! Maximum number of contributing points (depends on the C%oblimap_allocate_factor)
-    INTEGER                               :: total_mapped_points       ! Amount of affected/mapped/target grid points by the mapping
-    INTEGER , DIMENSION(:  ), ALLOCATABLE :: row_mapped                ! Row index of the affected/mapped/target points
-    INTEGER , DIMENSION(:  ), ALLOCATABLE :: column_mapped             ! Column index of the affected/mapped/target points
-!   INTEGER , DIMENSION(:  ), ALLOCATABLE :: row_index_mapped          ! Row index of the affected/mapped/target points
-!   INTEGER , DIMENSION(:  ), ALLOCATABLE :: column_index_mapped       ! Column index of the affected/mapped/target points
-    INTEGER , DIMENSION(:  ), ALLOCATABLE :: total_contributions       ! Number of contributing points used to estimate the field value for the grid point
-    INTEGER , DIMENSION(:,:), ALLOCATABLE :: row_index                 ! Row index of contributing point
-    INTEGER , DIMENSION(:,:), ALLOCATABLE :: column_index              ! Column index of contributing point
-!   INTEGER , DIMENSION(:,:), ALLOCATABLE :: row_index_contribution    ! Row index of contributing point
-!   INTEGER , DIMENSION(:,:), ALLOCATABLE :: column_index_contribution ! Column index of contributing point
-    REAL(dp), DIMENSION(:,:), ALLOCATABLE :: distance                  ! Distance of this nearest point relative to the IM point (m,n)
-  END TYPE scanned_projection_data
+  TYPE oblimap_ddo_type
+    ! The Dynamic Data Object (DDO). This DDO contains the scanned data of the SID file.
+    INTEGER                               :: maximum_contributions     ! The maximum number of contributing points (depends on the C%oblimap_allocate_factor)
+    INTEGER                               :: total_mapped_points       ! The amount of mapped (i.e. affected) destination grid points
+    INTEGER , DIMENSION(:  ), ALLOCATABLE :: row_index_destination     ! The row    index of each mapped destination grid point
+    INTEGER , DIMENSION(:  ), ALLOCATABLE :: column_index_destination  ! The column index of each mapped destination grid point
+    INTEGER , DIMENSION(:  ), ALLOCATABLE :: total_contributions       ! The number of contributing departure points used to estimate the field value of the each destination grid point
+    INTEGER , DIMENSION(:,:), ALLOCATABLE :: row_index                 ! The row    indices of the contributing departure points for each destination grid point
+    INTEGER , DIMENSION(:,:), ALLOCATABLE :: column_index              ! The column indices of the contributing departure points for each destination grid point
+    REAL(dp), DIMENSION(:,:), ALLOCATABLE :: distance                  ! The distances of the contributing departure points to each considered destination grid point
+  END TYPE oblimap_ddo_type
 
 
 
 CONTAINS
 
-  SUBROUTINE mapping(scanned, N_row_input, N_column_input, N_row_mapped, N_column_mapped, mask_of_invalid_contributions, input_field, mapped_field, mapping_participation_mask)
+  SUBROUTINE oblimap_mapping(ddo, N_row_input, N_column_input, N_row_mapped, N_column_mapped, mask_of_invalid_contributions, input_field, mapped_field, mapping_participation_mask)
     ! This routine contains the superfast mapping method.
     !   mapping = (inverse) oblique projection + interpolation
     ! It is suited for all OBLIMAP situations like for example:
@@ -75,7 +72,7 @@ CONTAINS
     IMPLICIT NONE
 
     ! Input variables:
-    TYPE(scanned_projection_data),                                                                              INTENT(IN)            :: scanned                        ! A 'struct' containing all the scanned contributions
+    TYPE(oblimap_ddo_type),                                                                                     INTENT(IN)            :: ddo                            ! The DDO containing all the scanned contributions
     INTEGER,                                                                                                    INTENT(IN)            :: N_row_input
     INTEGER,                                                                                                    INTENT(IN)            :: N_column_input
     INTEGER,                                                                                                    INTENT(IN)            :: N_row_mapped
@@ -106,103 +103,103 @@ CONTAINS
     ! then one layer. In case of more vertical layers this implementation does not give the best performance (however differences will be small).
     DO layer_counter = 1, C%number_of_vertical_layers
      ! See equation (2.17) and equation (2.19) in Reerink et al. (2010), both cases are treated with the same code:
-     DO p = 1, scanned%total_mapped_points
+     DO p = 1, ddo%total_mapped_points
        nearest_contribution%row_index    = -1                ! Initialize at an inappropriate value
        nearest_contribution%column_index = -1                ! Initialize at an inappropriate value
        nearest_contribution%distance     = C%large_distance  ! Initialize at a large value
        numerator   = 0._dp
        denumerator = 0._dp
 
-       DO q = 1, scanned%total_contributions(p)
+       DO q = 1, ddo%total_contributions(p)
          ! Select the nearest projected contribution:
-         IF(scanned%distance(p,q) < nearest_contribution%distance) THEN
-          nearest_contribution%row_index    = scanned%row_index(p,q)
-          nearest_contribution%column_index = scanned%column_index(p,q)
-          nearest_contribution%distance     = scanned%distance(p,q)
+         IF(ddo%distance(p,q) < nearest_contribution%distance) THEN
+          nearest_contribution%row_index    = ddo%row_index(p,q)
+          nearest_contribution%column_index = ddo%column_index(p,q)
+          nearest_contribution%distance     = ddo%distance(p,q)
          END IF
 
          ! Contributions which have no invalid value mask will be taken into account:
          DO field_counter = 1, C%number_of_mapped_fields
-          IF(.NOT. mask_of_invalid_contributions(field_counter,scanned%row_index(p,q),scanned%column_index(p,q),layer_counter)) THEN
+          IF(.NOT. mask_of_invalid_contributions(field_counter,ddo%row_index(p,q),ddo%column_index(p,q),layer_counter)) THEN
            ! See numerator in equation (2.17) and equation (2.19) in Reerink et al. (2010):
-           numerator(field_counter)   = numerator(field_counter) + input_field(field_counter,scanned%row_index(p,q),scanned%column_index(p,q),layer_counter) / (scanned%distance(p,q)**C%shepard_exponent)
+           numerator(field_counter)   = numerator(field_counter) + input_field(field_counter,ddo%row_index(p,q),ddo%column_index(p,q),layer_counter) / (ddo%distance(p,q)**C%shepard_exponent)
            ! See denumerator in equation (2.17) and equation (2.19) in Reerink et al. (2010):
-           denumerator(field_counter) = denumerator(field_counter) + (1._dp / (scanned%distance(p,q)**C%shepard_exponent))
+           denumerator(field_counter) = denumerator(field_counter) + (1._dp / (ddo%distance(p,q)**C%shepard_exponent))
           END IF
          END DO
        END DO
 
-       IF(scanned%total_contributions(p) == 0) THEN
-        ! If there are no contributions found set the field value to an invalid value (this should actually not occur, because such points are never written to the scanned file):
-        mapped_field(:,scanned%row_mapped(p),scanned%column_mapped(p),layer_counter) = C%invalid_input_value(:)
+       IF(ddo%total_contributions(p) == 0) THEN
+        ! If there are no contributions found set the field value to an invalid value (this should actually not occur, because such points are never written to the SID file):
+        mapped_field(:,ddo%row_index_destination(p),ddo%column_index_destination(p),layer_counter) = C%invalid_input_value(:)
        ELSE IF(C%nearest_point_assignment) THEN
         ! Nearest point assignment instead of interpolation of various neighbour points:
         DO field_counter = 1, C%number_of_mapped_fields
          IF(mask_of_invalid_contributions(field_counter,nearest_contribution%row_index,nearest_contribution%column_index,layer_counter)) THEN
-          mapped_field(field_counter,scanned%row_mapped(p),scanned%column_mapped(p),layer_counter) = C%invalid_input_value(field_counter)
+          mapped_field(field_counter,ddo%row_index_destination(p),ddo%column_index_destination(p),layer_counter) = C%invalid_input_value(field_counter)
          ELSE
-          mapped_field(field_counter,scanned%row_mapped(p),scanned%column_mapped(p),layer_counter) = input_field(field_counter,nearest_contribution%row_index,nearest_contribution%column_index,layer_counter)
+          mapped_field(field_counter,ddo%row_index_destination(p),ddo%column_index_destination(p),layer_counter) = input_field(field_counter,nearest_contribution%row_index,nearest_contribution%column_index,layer_counter)
          END IF
         END DO
        ELSE
         DO field_counter = 1, C%number_of_mapped_fields
          IF((C%invalid_value_mask_criterion(field_counter) == 1) .AND. mask_of_invalid_contributions(field_counter,nearest_contribution%row_index,nearest_contribution%column_index,layer_counter)) THEN
           ! NOTE: In case the nearest contributing point is invalid but all other contributing points are valid, then the mapped point will be taken invalid. And vice versa.
-          mapped_field(field_counter,scanned%row_mapped(p),scanned%column_mapped(p),layer_counter) = C%invalid_input_value(field_counter)
+          mapped_field(field_counter,ddo%row_index_destination(p),ddo%column_index_destination(p),layer_counter) = C%invalid_input_value(field_counter)
          ELSE
-          mapped_field(field_counter,scanned%row_mapped(p),scanned%column_mapped(p),layer_counter) = numerator(field_counter) / denumerator(field_counter)
-         !mapped_field(field_counter,scanned%row_mapped(p),scanned%column_mapped(p),layer_counter) = numerator(field_counter,layer_counter) / denumerator(field_counter,layer_counter)    !!! In case the layer loop is brought inside
+          mapped_field(field_counter,ddo%row_index_destination(p),ddo%column_index_destination(p),layer_counter) = numerator(field_counter) / denumerator(field_counter)
+         !mapped_field(field_counter,ddo%row_index_destination(p),ddo%column_index_destination(p),layer_counter) = numerator(field_counter,layer_counter) / denumerator(field_counter,layer_counter)    !!! In case the layer loop is brought inside
          END IF
         END DO
        END IF
-       ! The scanned file only contains lines for participating points, so only points which do not occur in the scanned file will keep a zero mapping_participation_mask:
-       IF(PRESENT(mapping_participation_mask)) mapping_participation_mask(scanned%row_mapped(p),scanned%column_mapped(p)) = 1
+       ! The SID file only contains lines for participating points, so only points which do not occur in the SID file will keep a zero mapping_participation_mask:
+       IF(PRESENT(mapping_participation_mask)) mapping_participation_mask(ddo%row_index_destination(p),ddo%column_index_destination(p)) = 1
      END DO
     END DO
 
     IF(message_once .AND. C%oblimap_message_level > 0) THEN
      IF(PRESENT(mapping_participation_mask)) THEN
-      WRITE(UNIT=*, FMT='(3(A, I10), A)') ' Number of mapped points is:', scanned%total_mapped_points, ', maximum amount of contributions for one mapped point = ', scanned%maximum_contributions, '. No contributions found for ', COUNT(mapping_participation_mask == 0), ' points.'
+      WRITE(UNIT=*, FMT='(3(A, I10), A)') ' Number of mapped points is:', ddo%total_mapped_points, ', maximum amount of contributions for one mapped point = ', ddo%maximum_contributions, '. No contributions found for ', COUNT(mapping_participation_mask == 0), ' points.'
      ELSE
-      WRITE(UNIT=*, FMT='(2(A, I10)   )') ' Number of mapped points is:', scanned%total_mapped_points, ', maximum amount of contributions for one mapped point = ', scanned%maximum_contributions
+      WRITE(UNIT=*, FMT='(2(A, I10)   )') ' Number of mapped points is:', ddo%total_mapped_points, ', maximum amount of contributions for one mapped point = ', ddo%maximum_contributions
      END IF
      message_once = .FALSE.
     END IF
-  END SUBROUTINE mapping
+  END SUBROUTINE oblimap_mapping
 
 
 
-  SUBROUTINE reading_the_scanned_projection_data(scanned_filename, scanned)
-    ! This routine reads the scanned projection data into a struct. The struct is allocated here.
-    ! This struct is used in the fast mapping routine.
+  SUBROUTINE oblimap_read_sid_file(sid_filename, ddo)
+    ! This routine reads the scanned projection data from the SID file into the Dynamic Data Object (DDO). The DDO is allocated here.
+    ! This DDO is used in the fast mapping routine.
     USE oblimap_configuration_module, ONLY : C
     IMPLICIT NONE
 
     ! Input variables:
-    CHARACTER(LEN=*)             , INTENT(IN)  :: scanned_filename      ! The name of the file which contains the scanned projection data
+    CHARACTER(LEN=*)      , INTENT(IN)  :: sid_filename          ! The name of the file which contains the data of the SID file
 
     ! Output variables:
-    TYPE(scanned_projection_data), INTENT(OUT) :: scanned               ! A 'struct' containing all the scanned contributions
+    TYPE(oblimap_ddo_type), INTENT(OUT) :: ddo                   ! The DDO which contains all the scanned contributions
 
     ! Local variables:
-    LOGICAL                                    :: file_exists
-    INTEGER                                    :: passing_header_line   ! Counter which walks over the header lines
-    CHARACTER(256)                             :: end_of_line           ! A variable with which the end of line can be read
-    LOGICAL                                    :: gcm_to_im_direction   ! This logical is true if the mapping direction is gcm to im, and false if it is im to gcm
-    INTEGER                                    :: status                ! Variable for checking the allocation status
-    INTEGER                                    :: p                     ! Counter which counts over the affected/mapped/target points
-    INTEGER                                    :: q                     ! Counter over the contributing points at each target point
+    LOGICAL                             :: file_exists
+    INTEGER                             :: passing_header_line   ! Counter which walks over the header lines
+    CHARACTER(256)                      :: end_of_line           ! A variable with which the end of line can be read
+    LOGICAL                             :: gcm_to_im_direction   ! This logical is true if the mapping direction is gcm to im, and false if it is im to gcm
+    INTEGER                             :: status                ! Variable for checking the allocation status
+    INTEGER                             :: p                     ! Counter which counts over the affected/mapped/target points
+    INTEGER                             :: q                     ! Counter over the contributing points at each target point
 
     ! Check file existence:
-    INQUIRE(EXIST = file_exists, FILE = scanned_filename)
+    INQUIRE(EXIST = file_exists, FILE = sid_filename)
     IF(.NOT. file_exists) THEN
-     WRITE(UNIT=*,FMT='(/4A/, 2A/)') C%OBLIMAP_ERROR, ' The file "', TRIM(scanned_filename), '" does not exist.', &
+     WRITE(UNIT=*,FMT='(/4A/, 2A/)') C%OBLIMAP_ERROR, ' The file "', TRIM(sid_filename), '" does not exist.', &
                                      '                This implies you have to set  scanning_mode_config = .TRUE.  in the config file: ', C%config_filename
      STOP
     END IF
 
-    ! Opening the scanned file:
-    OPEN(UNIT=118, FILE=TRIM(scanned_filename))
+    ! Opening the SID file:
+    OPEN(UNIT=118, FILE=TRIM(sid_filename))
 
     gcm_to_im_direction = .TRUE.
 
@@ -334,37 +331,37 @@ CONTAINS
 
     ! Reading the total number of mapped points. Each line in the file contains the necessary information of all the
     ! contributing points for one target grid point. The number of mapped (or target) points equals the number of lines
-    READ(UNIT=118, FMT='(I20)') scanned%maximum_contributions
-    READ(UNIT=118, FMT='(I20)') scanned%total_mapped_points
+    READ(UNIT=118, FMT='(I20)') ddo%maximum_contributions
+    READ(UNIT=118, FMT='(I20)') ddo%total_mapped_points
     READ(UNIT=118, FMT='(A  )') end_of_line
-   !WRITE(UNIT=*, FMT='(2(A, I12))') ' Number of mapped points is: ', scanned%total_mapped_points, ', maximum amount of contributions for one mapped point = ', scanned%maximum_contributions
+   !WRITE(UNIT=*, FMT='(2(A, I12))') ' Number of mapped points is: ', ddo%total_mapped_points, ', maximum amount of contributions for one mapped point = ', ddo%maximum_contributions
 
-    ALLOCATE(scanned%row_mapped         (scanned%total_mapped_points                              ), &
-             scanned%column_mapped      (scanned%total_mapped_points                              ), &
-             scanned%total_contributions(scanned%total_mapped_points                              ), &
-             scanned%row_index          (scanned%total_mapped_points,scanned%maximum_contributions), &
-             scanned%column_index       (scanned%total_mapped_points,scanned%maximum_contributions), &
-             scanned%distance           (scanned%total_mapped_points,scanned%maximum_contributions), &
+    ALLOCATE(ddo%row_index_destination   (ddo%total_mapped_points                          ), &
+             ddo%column_index_destination(ddo%total_mapped_points                          ), &
+             ddo%total_contributions     (ddo%total_mapped_points                          ), &
+             ddo%row_index               (ddo%total_mapped_points,ddo%maximum_contributions), &
+             ddo%column_index            (ddo%total_mapped_points,ddo%maximum_contributions), &
+             ddo%distance                (ddo%total_mapped_points,ddo%maximum_contributions), &
              STAT=status)
     IF(status /= 0) THEN
-     WRITE(UNIT=*, FMT='(/2A/)') C%OBLIMAP_ERROR, ' message from: reading_the_scanned_projection_data(): Could not allocate enough memory for the scanned struct.'
+     WRITE(UNIT=*, FMT='(/2A/)') C%OBLIMAP_ERROR, ' message from: oblimap_read_sid_file(): Could not allocate enough memory for the scanned struct.'
      STOP
     END IF
 
     ! See equation (2.17) and equation (2.19) in Reerink et al. (2010), both cases are treated with the same code:
-    DO p = 1, scanned%total_mapped_points
-     READ(UNIT=118, FMT='(3I6)', ADVANCE='NO') scanned%row_mapped(p), scanned%column_mapped(p), scanned%total_contributions(p)
+    DO p = 1, ddo%total_mapped_points
+     READ(UNIT=118, FMT='(3I6)', ADVANCE='NO') ddo%row_index_destination(p), ddo%column_index_destination(p), ddo%total_contributions(p)
 
-     DO q = 1, scanned%total_contributions(p)
-      READ(UNIT=118, FMT='(2I6,E23.15)', ADVANCE='NO') scanned%row_index(p,q), scanned%column_index(p,q), scanned%distance(p,q)
+     DO q = 1, ddo%total_contributions(p)
+      READ(UNIT=118, FMT='(2I6,E23.15)', ADVANCE='NO') ddo%row_index(p,q), ddo%column_index(p,q), ddo%distance(p,q)
      END DO
 
      READ(UNIT=118, FMT='(A)') end_of_line
     END DO
 
-    ! Closing the scanned file:
+    ! Closing the SID file:
     CLOSE(UNIT=118)
-  END SUBROUTINE reading_the_scanned_projection_data
+  END SUBROUTINE oblimap_read_sid_file
 
 
 
@@ -379,12 +376,12 @@ CONTAINS
 
     ! Local variables:
     CHARACTER(41)      :: description                    ! The first part of the header line will be read into this variable.
-    INTEGER            :: compare_integer                ! This variable contains the variable identical to the one which is read from the scanned file
+    INTEGER            :: compare_integer                ! This variable contains the variable identical to the one which is read from the SID file
 
     READ(UNIT=unit_number, FMT='(A63, I10)') description, compare_integer
     IF(compare_integer /= compared_config_variable) THEN
-     WRITE(UNIT=*, FMT='(/4A         )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the scanned file and in the config file.'
-     WRITE(UNIT=*, FMT='( 3A, I9, 2A )') '                  ', name_compared_config_variable, ' = ', compare_integer, ' in the scanned file: ', TRIM(C%scanned_projection_data_filename)
+     WRITE(UNIT=*, FMT='(/4A         )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the SID file and in the config file.'
+     WRITE(UNIT=*, FMT='( 3A, I9, 2A )') '                  ', name_compared_config_variable, ' = ', compare_integer, ' in the SID file: ', TRIM(C%sid_filename)
      WRITE(UNIT=*, FMT='( 3A, I9, 2A/)') '            while ', name_compared_config_variable, ' = ', compared_config_variable, ' in the config  file: ', TRIM(C%config_filename)
     END IF
   END SUBROUTINE read_and_compare_header_line_with_integer
@@ -402,12 +399,12 @@ CONTAINS
 
     ! Local variables:
     CHARACTER(41)      :: description                    ! The first part of the header line will be read into this variable.
-    REAL(dp)           :: compare_real                   ! This variable contains the variable identical to the one which is read from the scanned file
+    REAL(dp)           :: compare_real                   ! This variable contains the variable identical to the one which is read from the SID file
 
     READ(UNIT=unit_number, FMT='(A63, E24.16)') description, compare_real
     IF(compare_real - compared_config_variable > 1.0E-14) THEN
-     WRITE(UNIT=*, FMT='(/4A             )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the scanned file and in the config file.'
-     WRITE(UNIT=*, FMT='( 3A, F26.16, 2A )') '                  ', name_compared_config_variable, ' = ', compare_real, ' in the scanned file: ', TRIM(C%scanned_projection_data_filename)
+     WRITE(UNIT=*, FMT='(/4A             )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the SID file and in the config file.'
+     WRITE(UNIT=*, FMT='( 3A, F26.16, 2A )') '                  ', name_compared_config_variable, ' = ', compare_real, ' in the SID file: ', TRIM(C%sid_filename)
      WRITE(UNIT=*, FMT='( 3A, F26.16, 2A/)') '            while ', name_compared_config_variable, ' = ', compared_config_variable, ' in the config  file: ', TRIM(C%config_filename)
     END IF
   END SUBROUTINE read_and_compare_header_line_with_real
@@ -425,12 +422,12 @@ CONTAINS
 
     ! Local variables:
     CHARACTER(41)      :: description                    ! The first part of the header line will be read into this variable.
-    CHARACTER(256)     :: compare_string                 ! This variable contains the variable identical to the one which is read from the scanned file
+    CHARACTER(256)     :: compare_string                 ! This variable contains the variable identical to the one which is read from the SID file
 
     READ(UNIT=unit_number, FMT='(A63, A)') description, compare_string
     IF(compare_string /= compared_config_variable) THEN
-     WRITE(UNIT=*, FMT='(/4A        )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the scanned file and in the config file.'
-     WRITE(UNIT=*, FMT='( 3A, A, 2A )') '                  ', name_compared_config_variable, ' = ', TRIM(compare_string), ' in the scanned file: ', TRIM(C%scanned_projection_data_filename)
+     WRITE(UNIT=*, FMT='(/4A        )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the SID file and in the config file.'
+     WRITE(UNIT=*, FMT='( 3A, A, 2A )') '                  ', name_compared_config_variable, ' = ', TRIM(compare_string), ' in the SID file: ', TRIM(C%sid_filename)
      WRITE(UNIT=*, FMT='( 3A, A, 2A/)') '            while ', name_compared_config_variable, ' = ', TRIM(compared_config_variable), ' in the config  file: ', TRIM(C%config_filename)
     END IF
   END SUBROUTINE read_and_compare_header_line_with_string
@@ -448,30 +445,30 @@ CONTAINS
 
     ! Local variables:
     CHARACTER(41)      :: description                    ! The first part of the header line will be read into this variable.
-    LOGICAL            :: compare_logical                ! This variable contains the variable identical to the one which is read from the scanned file
+    LOGICAL            :: compare_logical                ! This variable contains the variable identical to the one which is read from the SID file
 
     READ(UNIT=unit_number, FMT='(A63, L)') description, compare_logical
     IF(compare_logical .NEQV. compared_config_variable) THEN
-     WRITE(UNIT=*, FMT='(/4A        )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the scanned file and in the config file.'
-     WRITE(UNIT=*, FMT='( 3A, L, 2A )') '                  ', name_compared_config_variable, ' = ', compare_logical, ' in the scanned file: ', TRIM(C%scanned_projection_data_filename)
+     WRITE(UNIT=*, FMT='(/4A        )') TRIM(C%OBLIMAP_WARNING), ' ', name_compared_config_variable, ' should be the same in the SID file and in the config file.'
+     WRITE(UNIT=*, FMT='( 3A, L, 2A )') '                  ', name_compared_config_variable, ' = ', compare_logical, ' in the SID file: ', TRIM(C%sid_filename)
      WRITE(UNIT=*, FMT='( 3A, L, 2A/)') '            while ', name_compared_config_variable, ' = ', compared_config_variable, ' in the config  file: ', TRIM(C%config_filename)
     END IF
   END SUBROUTINE read_and_compare_header_line_with_logical
 
 
 
-  SUBROUTINE finalize_reading_the_scanned_projection_data(scanned)
+  SUBROUTINE oblimap_deallocate_ddo(ddo)
     IMPLICIT NONE
 
-    ! Input variables:
-    TYPE(scanned_projection_data), INTENT(INOUT) :: scanned   ! A 'struct' containing all the scanned contributions
+    ! In/Output variables:
+    TYPE(oblimap_ddo_type), INTENT(INOUT) :: ddo   ! The DDO containing all the scanned contributions
 
-    DEALLOCATE(scanned%row_mapped         )
-    DEALLOCATE(scanned%column_mapped      )
-    DEALLOCATE(scanned%total_contributions)
-    DEALLOCATE(scanned%row_index          )
-    DEALLOCATE(scanned%column_index       )
-    DEALLOCATE(scanned%distance           )
-  END SUBROUTINE finalize_reading_the_scanned_projection_data
+    DEALLOCATE(ddo%row_index_destination   )
+    DEALLOCATE(ddo%column_index_destination)
+    DEALLOCATE(ddo%total_contributions     )
+    DEALLOCATE(ddo%row_index               )
+    DEALLOCATE(ddo%column_index            )
+    DEALLOCATE(ddo%distance                )
+  END SUBROUTINE oblimap_deallocate_ddo
 
 END MODULE oblimap_mapping_module

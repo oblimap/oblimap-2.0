@@ -21,7 +21,7 @@ choice_projection_method_config                           = 'oblique_stereograph
 scanning_mode_config                                      = .TRUE.
 level_of_automatic_oblimap_scanning_config                =      3
 scan_search_block_size_config                             =      5                                                ! To apply this conf variable the level_of_automatic_oblimap_scanning_config must be below 3
-scanned_projection_data_filename_config                   = 'oblimap-results/oblimap-scanned-projection-data/scanned-projection-data-ccsm-to-im-greenland.txt'
+sid_filename_config                                       = './oblimap-sid-files/sid-file-ccsm-to-im-greenland.txt'
 
 ! Interpolation:
 R_search_interpolation_config                             =  16000

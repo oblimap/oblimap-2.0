@@ -15,7 +15,7 @@ alpha_stereographic_config                                =      7.5            
 choice_projection_method_config                           = 'oblique_stereographic_projection' 
 
 scanning_mode_config                                      = .TRUE.
-scanned_projection_data_filename_config                   = 'oblimap-results/oblimap-scanned-projection-data/scanned-projection-data-im-to-ccsm-greenland.txt'
+sid_filename_config                                       = './oblimap-sid-files/sid-file-im-to-ccsm-greenland.txt'
 !scan_search_block_size_config                             = 26
 R_search_interpolation_config                             = 125000
 shepard_exponent_config                                   = 2

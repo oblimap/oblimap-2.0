@@ -12,10 +12,10 @@ dy_config                                                 =  20000              
 lambda_M_config                                           =    319                                                ! The longitude coordinate of the middle point of projection (in degrees)
 phi_M_config                                              =     72                                                ! The latitude  coordinate of the middle point of projection (in degrees)
 alpha_stereographic_config                                =      7.1                                              ! alpha determines the standard parallel of the projection (in degrees)
-choice_projection_method_config                           = 'oblique_stereographic_projection_ellipsoid_snyder'
+choice_projection_method_config                           = 'oblique_stereographic_projection'
 
 scanning_mode_config                                      = .TRUE.
-scanned_projection_data_filename_config                   = 'oblimap-results/oblimap-scanned-projection-data/scanned-projection-data-racmo2-clrun-to-im-greenland-20x20km.txt'
+sid_filename_config                                       = './oblimap-sid-files/sid-file-racmo2-clrun-to-im-greenland-20x20km.txt'
 !scan_search_block_size_config                             = 2
 R_search_interpolation_config                             = 20000
 shepard_exponent_config                                   = 2
