@@ -1,7 +1,7 @@
 # oblimap-2.0
 The second OBLIMAP release (2016)
 
-This software is open source (See licensing details elsewhere). In addition to the formal licensing terms, We would greatly appreciate an acknowledgement. Preferably in the form of a citation and a link to the web-page.
+This software is open source (See licensing details elsewhere). In addition to the formal licensing terms, we would greatly appreciate an acknowledgement. Preferably in the form of a citation and a link to the web-page.
 
 Citation: Reerink et al. (2016,2010):
 
