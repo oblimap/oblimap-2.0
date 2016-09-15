@@ -428,33 +428,35 @@ CONTAINS
      CALL handle_error(  nf90_put_att(nc%ncid, nc%id(field_counter), 'missing_value', C%invalid_output_value(field_counter)), '. [27] From oblimap_create_netcdf_file(): it concerns the missing_value definition, of the field "'//TRIM(nc%field_name(field_counter))//'" in the file '//TRIM(nc%file_name))
     END DO
     CALL handle_error(   nf90_put_att(nc%ncid, nf90_global         , 'acknowledgment', 'Created with OBLIMAP 2.0, copyright (C) 2016 Thomas Reerink under the GNU General Public License Copyright.'), '. [28] From oblimap_create_netcdf_file(): it concerns the global attribute definition, in the file '//TRIM(nc%file_name))
-    CALL handle_error(   nf90_put_att(nc%ncid, nf90_global         , 'web-references', 'http://www.geosci-model-dev.net/3/13/2010/gmd-3-13-2010.html http://icedyn.wordpress.com/'                  ), '. [29] From oblimap_create_netcdf_file(): it concerns the global attribute definition, in the file '//TRIM(nc%file_name))
+    CALL handle_error(   nf90_put_att(nc%ncid, nf90_global         , 'web-reference-1', 'OBLIMAP github: https://github.com/oblimap/oblimap-2.0'                      ), '. [29] From oblimap_create_netcdf_file(): it concerns the global attribute definition, in the file '//TRIM(nc%file_name))
+    CALL handle_error(   nf90_put_att(nc%ncid, nf90_global         , 'web-reference-2', 'Reerink et al. (2010): http://www.geosci-model-dev.net/3/13/2010/'           ), '. [30] From oblimap_create_netcdf_file(): it concerns the global attribute definition, in the file '//TRIM(nc%file_name))
+    CALL handle_error(   nf90_put_att(nc%ncid, nf90_global         , 'web-reference-3', 'Reerink et al. (2016): http://www.geosci-model-dev-discuss.net/gmd-2016-124/'), '. [31] From oblimap_create_netcdf_file(): it concerns the global attribute definition, in the file '//TRIM(nc%file_name))
 
     CALL handle_error(   nf90_enddef(nc%ncid))
 
 
     ! Put the coordinates of dimension 1:
     IF(coordinates_dimension_1_are_1D) THEN
-     CALL handle_error(nf90_put_var( nc%ncid, nc%id(-2), coordinates_dimension_1_1D    ), '. [30] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-2))//'" in the file '//TRIM(nc%file_name))
+     CALL handle_error(nf90_put_var( nc%ncid, nc%id(-2), coordinates_dimension_1_1D    ), '. [32] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-2))//'" in the file '//TRIM(nc%file_name))
     ELSE
-     CALL handle_error(nf90_put_var( nc%ncid, nc%id(-2), coordinates_dimension_1_2D    ), '. [31] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-2))//'" in the file '//TRIM(nc%file_name))
+     CALL handle_error(nf90_put_var( nc%ncid, nc%id(-2), coordinates_dimension_1_2D    ), '. [33] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-2))//'" in the file '//TRIM(nc%file_name))
     END IF
 
     IF(include_two_spatial_dimensions) THEN
      ! Put the coordinates of dimension 2:
      IF(coordinates_dimension_2_are_1D) THEN
-      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-4), coordinates_dimension_2_1D    ), '. [32] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-4))//'" in the file '//TRIM(nc%file_name))
+      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-4), coordinates_dimension_2_1D    ), '. [34] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-4))//'" in the file '//TRIM(nc%file_name))
      ELSE
-      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-4), coordinates_dimension_2_2D    ), '. [33] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-4))//'" in the file '//TRIM(nc%file_name))
+      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-4), coordinates_dimension_2_2D    ), '. [35] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-4))//'" in the file '//TRIM(nc%file_name))
      END IF
     END IF
 
     ! Put the vertical coordinate variable:
     IF(include_vertical_dimension) THEN
      IF(PRESENT(vertical_axis)) THEN
-      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-6), vertical_axis                 ), '. [34] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-6))//'" in the file '//TRIM(nc%file_name))
+      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-6), vertical_axis                 ), '. [36] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-6))//'" in the file '//TRIM(nc%file_name))
      ELSE
-      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-6), (/ (k, k=1, nc%LEN_DIM(3)) /) ), '. [35] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-6))//'" in the file '//TRIM(nc%file_name))
+      CALL handle_error(nf90_put_var(nc%ncid, nc%id(-6), (/ (k, k=1, nc%LEN_DIM(3)) /) ), '. [37] From oblimap_create_netcdf_file(): it concerns the field "'//TRIM(nc%field_name(-6))//'" in the file '//TRIM(nc%file_name))
      END IF
     END IF
   END SUBROUTINE oblimap_create_netcdf_file
@@ -564,8 +566,8 @@ CONTAINS
     ELSE
      DO m = 1, NX
      DO n = 1, NY
-       x_coordinates_of_im_grid_points(m,n) = dx * (m - ((NX+1) / 2))
-       y_coordinates_of_im_grid_points(m,n) = dy * (n - ((NY+1) / 2))
+       x_coordinates_of_im_grid_points(m,n) = dx * (m - ((NX+1) / 2.0))
+       y_coordinates_of_im_grid_points(m,n) = dy * (n - ((NY+1) / 2.0))
      END DO
      END DO
     END IF
