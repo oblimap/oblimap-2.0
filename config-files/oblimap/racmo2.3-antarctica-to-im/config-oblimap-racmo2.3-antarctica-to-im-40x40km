@@ -1,0 +1,112 @@
+! ./src/oblimap_gcm_to_im_program config-files/oblimap/racmo2.3-antarctica-to-im/config-oblimap-racmo2.3-antarctica-to-im-40x40km
+
+&CONFIG 
+NLON_config                                               =    262                                                ! The number of GCM grid points in the longitude direction
+NLAT_config                                               =    240                                                ! The number of GCM grid points in the latitude  direction
+
+NX_config                                                 =    141                                                ! The number of IM grid points in the x-direction
+NY_config                                                 =    141                                                ! The number of IM grid points in the y-direction
+dx_config                                                 =  40000                                                ! The           IM grid size   in the x-direction (in meter)
+dy_config                                                 =  40000                                                ! The           IM grid size   in the y-direction (in meter)
+
+lambda_M_config                                           =      0                                                ! The longitude coordinate of the middle point of projection (in degrees)
+phi_M_config                                              =    -90                                                ! The latitude  coordinate of the middle point of projection (in degrees)
+alpha_stereographic_config                                =     19                                                ! alpha determines the standard parallel of the projection (in degrees)
+choice_projection_method_config                           = 'oblique_stereographic_projection'
+
+scanning_mode_config                                      = .TRUE.
+sid_filename_config                                       = './oblimap-sid-files/sid-file-racmo2.3-antarctica-to-im-40x40km.txt'
+!scan_search_block_size_config                             = 2
+R_search_interpolation_config                             = 20000
+shepard_exponent_config                                   = 2
+nearest_point_assignment_config                           = .FALSE.
+
+! The name of the file containing the input data for the mapping:
+gcm_input_filename_config                                 = './data/racmo2.3-antarctica/mean-1979-2014-racmo2.3-atmospheric-forcing-fields-antarctica.nc'
+gcm_record_range_config                                   = 1,1
+
+number_of_mapped_fields_config                            = 8
+gcm_field_name_config(-4)                                 = 'latitude'                                            ! Should match with the gcm input file
+gcm_field_name_config(-2)                                 = 'longitude'                                           ! Should match with the gcm input file
+gcm_field_name_config(0)                                  = 'time'                                                ! Should match with the gcm input file
+gcm_field_name_config(1)                                  = 'smb'                                                 ! Should match with the gcm input file
+gcm_field_name_config(2)                                  = 'sublimation'                                         ! Should match with the gcm input file
+gcm_field_name_config(3)                                  = 'precipitation'                                       ! Should match with the gcm input file
+gcm_field_name_config(4)                                  = 'snowfall'                                            ! Should match with the gcm input file
+gcm_field_name_config(5)                                  = 'runoff'                                              ! Should match with the gcm input file
+gcm_field_name_config(6)                                  = 'refreeze'                                            ! Should match with the gcm input file
+gcm_field_name_config(7)                                  = 'ice_surface_temperature'                             ! Should match with the gcm input file
+gcm_field_name_config(8)                                  = 'air_temperature_at_2m'                               ! Should match with the gcm input file
+gcm_field_name_config(9)                                  = 'mask'                                                ! Should match with the gcm input file
+gcm_field_name_config(10)                                 = 'grounded_mask'                                       ! Should match with the gcm input file
+
+im_field_name_config(-5)                                  = 'NY'
+im_field_name_config(-4)                                  = 'y'
+im_field_name_config(-3)                                  = 'NX'
+im_field_name_config(-2)                                  = 'x'
+im_field_name_config(-1)                                  = 'NTIME'
+im_field_name_config(0)                                   = 'time'
+im_field_name_config(1)                                   = 'smb'
+im_field_name_config(2)                                   = 'sublimation'
+im_field_name_config(3)                                   = 'precipitation'
+im_field_name_config(4)                                   = 'snowfall'
+im_field_name_config(5)                                   = 'runoff'
+im_field_name_config(6)                                   = 'refreeze'
+im_field_name_config(7)                                   = 'ice_surface_temperature'
+im_field_name_config(8)                                   = 'air_temperature_at_2m'
+im_field_name_config(9)                                   = 'mask'
+im_field_name_config(10)                                  = 'grounded_mask'
+
+im_field_unit_config(-4)                                  = 'meter'
+im_field_unit_config(-2)                                  = 'meter'
+im_field_unit_config(0)                                   = 'year'
+im_field_unit_config(1)                                   = 'mmweq'
+im_field_unit_config(2)                                   = 'mmweq'
+im_field_unit_config(3)                                   = 'mmweq'
+im_field_unit_config(4)                                   = 'mmweq'
+im_field_unit_config(5)                                   = 'mmweq'
+im_field_unit_config(6)                                   = 'mmweq'
+im_field_unit_config(7)                                   = 'Kelvin'
+im_field_unit_config(8)                                   = 'Kelvin'
+im_field_unit_config(9)                                   = '-'
+im_field_unit_config(10)                                  = '-'
+
+im_field_longname_config(-4)                              = 'y-axis (meter)'
+im_field_longname_config(-2)                              = 'x-axis (meter)'
+im_field_longname_config(0)                               = 'time (year)'
+im_field_longname_config(1)                               = 'surface mass balance (mmweq)'
+im_field_longname_config(2)                               = 'sublimation (mmweq)'
+im_field_longname_config(3)                               = 'precipitation (mmweq)'
+im_field_longname_config(4)                               = 'snowfall (mmweq)'
+im_field_longname_config(5)                               = 'runoff (mmweq)'
+im_field_longname_config(6)                               = 'refreeze (mmweq)'
+im_field_longname_config(7)                               = 'ice surface temperature (Kelvin)'
+im_field_longname_config(8)                               = 'air temperature at 2 meter above ice surface (Kelvin)'
+im_field_longname_config(9)                               = 'mask (-)'
+im_field_longname_config(10)                              = 'grounded mask (-)'
+
+field_which_determines_invalid_value_mask_config(1)       =  1
+field_which_determines_invalid_value_mask_config(2)       = -2
+field_which_determines_invalid_value_mask_config(3)       = -3
+field_which_determines_invalid_value_mask_config(4)       = -4
+field_which_determines_invalid_value_mask_config(5)       =  5
+field_which_determines_invalid_value_mask_config(6)       =  6
+field_which_determines_invalid_value_mask_config(7)       = -7
+field_which_determines_invalid_value_mask_config(8)       = -8
+field_which_determines_invalid_value_mask_config(9)       =  9
+field_which_determines_invalid_value_mask_config(10)      =  10
+
+invalid_input_value_config(1)                             = -9999
+invalid_input_value_config(5)                             = -9999
+invalid_input_value_config(6)                             = -9999
+invalid_input_value_config(9)                             = 0
+invalid_input_value_config(10)                            = 0
+
+invalid_output_value_config(1)                            = -9999
+invalid_output_value_config(9)                            = 0
+invalid_output_value_config(10)                           = 0
+
+im_created_filename_config                                = './forcing-fields-at-IM-antarctica-40x40km.nc'
+protect_file_overwriting_config                           = .FALSE.
+oblimap_message_level_config                              = 0
+/

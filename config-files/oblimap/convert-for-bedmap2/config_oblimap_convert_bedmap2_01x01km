@@ -1,0 +1,69 @@
+&CONFIG 
+
+! This config is used for converting (x,y)-coordinates to (lon,lat)-coordinates with a projection as specified below.
+! This is a first step in remapping an IM grid. So with: 
+!  ./src/oblimap_convert_program config-files/oblimap/convert-for-bedmap2/config_oblimap_convert_bedmap2_01x01km
+! the fields of an IM grid are copied to a GCM grid while the (x,y)-coordinates are converted to (lon,lat)-coordinates
+! by a projection as specified below. In a second 'normal' step these GCM fields are mapped to an IM grid again, e.g.
+! with:
+!  ./src/oblimap_gcm_to_im_program config-files/oblimap/bedmap2-to-im/config_oblimap_bedmap2_to_im_antarctica_20x20km
+
+! Note that the data in the input file (specified by im_input_filename_config) might be defined on the WGS84 or the
+! EIGEN-GL04C geoid, one has to verify and choose the suited geoid. It should match with your parallel mapping of the
+! forcing data.
+
+NLON_config                                               =   6667                                                ! The NX in the GCM output file, must be equal here to the NX in the IM input file
+NLAT_config                                               =   6667                                                ! The NY in the GCM output file, must be equal here to the NY in the IM input file
+
+NX_config                                                 =   6667                                                ! The number of IM grid points in the x-direction in the IM input file
+NY_config                                                 =   6667                                                ! The number of IM grid points in the y-direction in the IM input file
+dx_config                                                 =   1000                                                ! The           IM grid size   in the x-direction (in meter) in the IM input file
+dy_config                                                 =   1000                                                ! The           IM grid size   in the y-direction (in meter) in the IM input file
+
+lambda_M_config                                           =      0                                                ! The central meridian used in the projection of the DEM by Fretwell et al. (2013)
+phi_M_config                                              =    -90                                                ! A polar stereographic projection has been used in the projection of the DEM by Fretwell et al. (2013) 
+alpha_stereographic_config                                =     19                                                ! The standard as mentioned by the bedmap2 readme
+choice_projection_method_config                           = 'oblique_stereographic_projection_ellipsoid_snyder'
+
+! The name of the file containing the input IM data:
+im_input_filename_config                                  = './data/bedmap2/bedmap2_topography_antarctica.nc'
+im_record_range_config                                    = 1,1
+
+! With oblimap_convert_program  it is obligatory to use a 2D format of the lon-lat coordinates in the output netcdf file:
+unit_conversion_x_ax_config                               = 1                                                     ! Unit conversion: stays meters
+unit_conversion_y_ax_config                               = 1                                                     ! Unit conversion: stays meters
+
+number_of_mapped_fields_config                            = 4
+im_field_name_config(-4)                                  = 'y'                                                   ! Should match with the im input file
+im_field_name_config(-2)                                  = 'x'                                                   ! Should match with the im input file
+im_field_name_config(1)                                   = 'surface'                                             ! Should match with the im input file
+im_field_name_config(2)                                   = 'thickness'                                           ! Should match with the im input file
+im_field_name_config(3)                                   = 'bed'                                                 ! Should match with the im input file
+im_field_name_config(4)                                   = 'icemask_grounded_and_shelves'
+gcm_field_name_config(-4)                                 = 'latitude'
+gcm_field_name_config(-2)                                 = 'longitude'
+gcm_field_name_config(1)                                  = 'Surface Elevation'
+gcm_field_name_config(2)                                  = 'Ice Thickness'
+gcm_field_name_config(3)                                  = 'Bedrock Elevation'
+gcm_field_name_config(4)                                  = 'Ice Mask'
+
+gcm_field_unit_config(-4)                                 = 'degrees north'
+gcm_field_unit_config(-2)                                 = 'degrees east'
+gcm_field_unit_config(1)                                  = 'meter'
+gcm_field_unit_config(2)                                  = 'meter'
+gcm_field_unit_config(3)                                  = 'meter'
+gcm_field_unit_config(4)                                  = '-'
+
+gcm_field_longname_config(-4)                             = 'latitude (degrees north)'
+gcm_field_longname_config(-2)                             = 'longitude (degrees east)'
+gcm_field_longname_config( 1)                             = 'Surface Elevation (meter)'
+gcm_field_longname_config( 2)                             = 'Ice Thickness (meter)'
+gcm_field_longname_config( 3)                             = 'Bedrock Elevation (meter)'
+gcm_field_longname_config( 4)                             = 'Ice Mask for Grounded and Shelf points (-)'
+
+invalid_input_value_config(1)                             = -9999
+
+gcm_created_filename_config                               = './data/bedmap2/bedmap2_topography_antarctica_1km_at_lon_lat.nc'
+protect_file_overwriting_config                           = .FALSE.
+oblimap_message_level_config                              = 0
+/
