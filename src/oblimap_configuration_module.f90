@@ -820,11 +820,6 @@ CONTAINS
 
     C%invalid_input_value                            = invalid_input_value_config
     C%invalid_output_value                           = invalid_output_value_config
-   !WHERE(invalid_output_value_config /= -9999._dp)
-   ! C%invalid_output_value                          = invalid_output_value_config  ! If specified in config file, take that value
-   !ELSE WHERE
-   ! C%invalid_output_value                          = C%invalid_input_value        ! Otherwise take the same value as the C%invalid_input_value
-   !END WHERE
 
     C%gcm_field_name                                 = gcm_field_name_config
     C%gcm_field_unit                                 = gcm_field_unit_config
