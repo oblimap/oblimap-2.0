@@ -1,0 +1,27 @@
+The provided netcdf file:
+ mean-1958-1989-racmo2.3-atmospheric-forcing-fields-greenland.nc
+contains a set of RACMO2.3 atmospheric forcing fields which represent a present
+day average for Greenland (being a 1958-1989 yearly mean time average). The 
+fields can be mapped with OBLIMAP on any grid of preference and can be used to
+force an ice sheet model.
+
+This data set collection is composed by Thomas Reerink (IMAU) who also provided
+the meta data and proper missing values. The data source is: RACMO2.3 (KNMI), 
+creation date: Feb 10 2016, domain: ZGRN11, experiment: BN_1958_2014 processed 
+by Brice Noel (IMAU).
+
+This data set should therefore be referenced as: 
+
+A 1958-1989 mean RACMO2.3 atmospheric forcing data set of Greenland 
+(Reerink et al., 2016; Van Wessem et al. 2014)
+
+
+Reerink, T. J., W. van de Berg, and R. S. W. van de Wal (2016), Fast GCM - ice sheet 
+model coupling software OBLIMAP 2.0, including on-line embeddable mapping routines, 
+Geoscientific Model Development, http://www.geosci-model-dev-discuss.net/gmd-2016-124/
+doi:10.5194/gmd-2016-124
+
+Noël, B., van de Berg, W. J., van Meijgaard, E., Kuipers Munneke,P., van de Wal, R. S. W., 
+and van den Broeke, M. R. (2015), Evaluation of the updated regional climate model RACMO2.3:
+summer snowfall impact on the Greenland Ice Sheet, The Cryosphere, 9, 1831-1844, 
+doi:10.5194/tc-9-1831-2015, http://www.the-cryosphere.net/9/1831/2015/

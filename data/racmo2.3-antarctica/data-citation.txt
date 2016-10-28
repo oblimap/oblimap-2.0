@@ -1,0 +1,27 @@
+The provided netcdf file:
+ mean-1979-2014-racmo2.3-atmospheric-forcing-fields-antarctica.nc
+contains a set of RACMO2.3 atmospheric forcing fields which represent a present
+day average for Antarctica (being a 1979-2014 yearly mean time average). The 
+fields can be mapped with OBLIMAP on any grid of preference and can be used to
+force an ice sheet model.
+
+This data set collection is composed by Thomas Reerink (IMAU) who also provided
+the meta data and proper missing values. The data source is: RACMO2.3 (KNMI), 
+creation date: Feb 11 2015, from ERAIN_r490 processed by Melchior van Wessem (IMAU)
+
+This data set should therefore be referenced as: 
+
+A 1979-2014 mean RACMO2.3 atmospheric forcing data set of Antarctica 
+(Reerink et al., 2016; Van Wessem et al. 2014)
+
+
+Reerink, T. J., W. van de Berg, and R. S. W. van de Wal (2016), Fast GCM - ice sheet 
+model coupling software OBLIMAP 2.0, including on-line embeddable mapping routines, 
+Geoscientific Model Development, http://www.geosci-model-dev-discuss.net/gmd-2016-124/
+doi:10.5194/gmd-2016-124
+
+Van Wessem, J., Reijmer, C., Morlighem, M., Mouginot, J., Rignot, E., Medley, B., 
+Joughin, I., Wouters, B., Depoorter, M., Bamber, J., Lenaerts, J., Van De Berg, W., 
+Van Den Broeke, M., and Van Meijgaard, E. (2014), Improved representation of East Antarctic 
+surface mass balance in a regional atmospheric climate model, Journal of Glaciology, 
+60, 761-770, doi:10.3189/2014JoG14J051
