@@ -5,7 +5,7 @@ This software is open source (See licensing details elsewhere). In addition to t
 
 Citation: Reerink et al. (2016,2010):
 
-Reerink, T. J., van de Berg, W.J., R. S. W. van de Wal (2016), Fast gcm – ice sheet model coupling software oblimap 2.0, including on-line embeddable mapping routines, Geoscientific Model Development, 2016, 1–31, doi: 10.5194/gmd-2016-124, http://www.geosci-model-dev-discuss.net/gmd-2016-124/
+Reerink, T. J., van de Berg, W.J., van de Wal, R. S. W.  (2016), Fast gcm – ice sheet model coupling software oblimap 2.0, including on-line embeddable mapping routines, Geoscientific Model Development, 2016, 1–31, doi: 10.5194/gmd-2016-124, http://www.geosci-model-dev-discuss.net/gmd-2016-124/
 
 Reerink, T. J., Kliphuis, M. A., van de Wal, R. S. W.: Mapping technique of climate fields between GCM’s and ice models, Geoscientific Model Development, 3, 13–41, doi:10.5194/gmd-3-13-2010, http://www.geosci-model-dev.net/3/13/2010/, 2010.
 
