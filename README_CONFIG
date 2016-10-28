@@ -9,7 +9,7 @@
 
  Each config variable and its useful range is listed below. The Maximum Number
  of Fields (MNF) which can be mapped simultaneously is 100 by default, but can
- be highered to any positive integer in
+ be raised to any positive integer in
   src/oblimap_configuration_module.f90
  whereupon the OBLIMAP code has to be (re)compiled. The Maximum Number of 
  Dimensions (MND) is a negative number to allocate space in these arrays 
@@ -97,4 +97,4 @@
   https://github.com/oblimap/oblimap-2.0/blob/master/documentation/oblimap-user-guide.pdf
 
  Thomas Reerink
- August 2016
+ October 2016

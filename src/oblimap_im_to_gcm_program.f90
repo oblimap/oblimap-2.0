@@ -7,9 +7,17 @@
 !
 ! This file is part of OBLIMAP 2.0
 !
-! OBLIMAP's scientific documentation and its first open source
-! release (see the supplement) is published at:
-! http://www.geosci-model-dev.net/3/13/2010/gmd-3-13-2010.html
+! The scientific documentation of OBLIMAP is published at:
+!  http://www.geosci-model-dev.net/3/13/2010/gmd-3-13-2010.html
+!  http://www.geosci-model-dev-discuss.net/gmd-2016-124/#discussion
+!
+! The OBLIMAP User Guide can be found at:
+!  https://github.com/oblimap/oblimap-2.0/tree/master/documentation
+!
+! The OBLIMAP code can be downloaded by:
+!  svn checkout https://svn.science.uu.nl/repos/project.oblimap
+! Or from OBLIMAP's Github:
+!  https://github.com/oblimap/oblimap-2.0
 !
 ! OBLIMAP is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
