@@ -12,12 +12,12 @@ by Brice Noel (IMAU).
 
 This data set should therefore be referenced as: 
 
-A 1958-1989 mean RACMO2.3 atmospheric forcing data set of Greenland 
-(Reerink et al., 2016; Van Wessem et al. 2014)
+A 1958-1989 mean RACMO2.3 atmospheric forcing data set of Greenland, Reerink et al. (2016) & Noël et al. (2014), 
+https://github.com/oblimap/oblimap-2.0/tree/master/data/racmo2.3-greenland (18 November 2016), 2016.
 
 
-Reerink, T. J., W. van de Berg, and R. S. W. van de Wal (2016), Fast GCM - ice sheet 
-model coupling software OBLIMAP 2.0, including on-line embeddable mapping routines, 
+Reerink, T. J., W. J. van de Berg, and R. S. W. van de Wal (2016), OBLIMAP 2.0: a fast climate 
+model--ice sheet model coupler including online embeddable mapping routines, 
 Geoscientific Model Development, http://www.geosci-model-dev-discuss.net/gmd-2016-124/
 doi:10.5194/gmd-2016-124
 
