@@ -7,7 +7,7 @@ Citation: Reerink et al. (2010,2016):
 
 Reerink, T. J., M. A. Kliphuis, R. S. W. van de Wal (2010): Mapping technique of climate fields between GCM’s and ice models, Geoscientific Model Development, 3, 13–41, doi:10.5194/gmd-3-13-2010, http://www.geosci-model-dev.net/3/13/2010/
 
-Reerink, T. J., W. J. van de Berg, and R. S. W. van de Wal (2016), Oblimap 2.0: a fast climate model–ice sheet model coupler including online embeddable mapping routines, Geoscientific Model Development, 9 (11), 4111–4132, doi:10.5194/gmd-9-4111-2016, http://www.geosci-model-dev.net/9/4111/2016/gmd-9-4111-2016.html.
+Reerink, T. J., W. J. van de Berg, and R. S. W. van de Wal (2016), Oblimap 2.0: a fast climate model–ice sheet model coupler including online embeddable mapping routines, Geoscientific Model Development, 9 (11), 4111–4132, doi:10.5194/gmd-9-4111-2016, http://www.geosci-model-dev.net/9/4111/2016/
 
 
 The OBLIMAP User Guide can be cited as follows:
