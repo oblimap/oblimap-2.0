@@ -8,8 +8,8 @@
 ! This file is part of OBLIMAP 2.0
 !
 ! See Reerink et al. (2010,2016) for OBLIMAP's scientific documentation:
-!  http://www.geosci-model-dev.net/3/13/2010/gmd-3-13-2010.html
-!  http://www.geosci-model-dev-discuss.net/gmd-2016-124/#discussion
+!  http://www.geosci-model-dev.net/3/13/2010/
+!  http://www.geosci-model-dev.net/9/4111/2016/
 !
 ! The OBLIMAP User Guide (Reerink, 2016) can be found at:
 !  https://github.com/oblimap/oblimap-2.0/tree/master/documentation
