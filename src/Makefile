@@ -53,6 +53,7 @@
 # Include below the Makefile.include which matches with your fortran compiler:
 include Makefile.gfortran
 #include Makefile.gfortran-mp-4.9-mac
+#include Makefile.gfortran-mp-6-mac
 #include Makefile.gfortran-lisa
 #include Makefile.ifort-lisa
 #include Makefile.ifort-staff.science
