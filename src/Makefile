@@ -86,8 +86,8 @@ oblimap_gcm_to_im_program_objects = \
         oblimap_configuration_module.o \
         oblimap_read_and_write_module.o \
         oblimap_projection_module.o \
-        oblimap_scan_contributions_module.o \
         oblimap_mapping_module.o \
+        oblimap_scan_contributions_module.o \
         oblimap_gcm_to_im_mapping_module.o \
         oblimap_gcm_to_im_program.o
 
@@ -108,8 +108,8 @@ oblimap_im_to_gcm_program_objects = \
         oblimap_configuration_module.o \
         oblimap_read_and_write_module.o \
         oblimap_projection_module.o \
-        oblimap_scan_contributions_module.o \
         oblimap_mapping_module.o \
+        oblimap_scan_contributions_module.o \
         oblimap_im_to_gcm_mapping_module.o \
         oblimap_im_to_gcm_program.o
 
@@ -130,6 +130,7 @@ oblimap_convert_program_objects = \
         oblimap_configuration_module.o \
         oblimap_read_and_write_module.o \
         oblimap_projection_module.o \
+        oblimap_mapping_module.o \
         oblimap_scan_contributions_module.o \
         oblimap_convert_module.o \
         oblimap_convert_program.o

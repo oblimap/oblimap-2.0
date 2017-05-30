@@ -49,6 +49,16 @@ MODULE oblimap_mapping_module
   USE oblimap_configuration_module, ONLY: dp
   IMPLICIT NONE
 
+  TYPE triplet
+    INTEGER  :: row_index     ! row index of nearest point within one quadrant
+    INTEGER  :: column_index  ! column index of nearest point within one quadrant
+    REAL(dp) :: distance      ! distance of this nearest point relative to the IM point (m,n)
+  END TYPE triplet
+
+  ! In case there are no contributions, the distance is set to a huge number: C%large_distance = 1.0E8_dp, and the indices to -999999
+ !TYPE(triplet), PARAMETER :: no_contribution = triplet(-999999, -999999, 1.0E8_dp)
+
+
   TYPE oblimap_ddo_type
     ! The Dynamic Data Object (DDO). This DDO contains the scanned data of the SID file.
     INTEGER                               :: maximum_contributions     ! The maximum number of contributing points (depends on the C%oblimap_allocate_factor)
@@ -76,7 +86,6 @@ CONTAINS
     !  inverse oblique projection + radius   interpolation
     !  inverse oblique projection + nearest point assignment
     USE oblimap_configuration_module, ONLY : dp, C
-    USE oblimap_scan_contributions_module, ONLY: triplet
     IMPLICIT NONE
 
     ! Input variables:
@@ -197,6 +206,7 @@ CONTAINS
     INTEGER                             :: status                ! Variable for checking the allocation status
     INTEGER                             :: p                     ! Counter which counts over the affected/mapped/target points
     INTEGER                             :: q                     ! Counter over the contributing points at each target point
+    INTEGER               , PARAMETER   :: unit_number = 118
 
     ! Check file existence:
     INQUIRE(EXIST = file_exists, FILE = sid_filename)
@@ -207,141 +217,141 @@ CONTAINS
     END IF
 
     ! Opening the SID file:
-    OPEN(UNIT=118, FILE=TRIM(sid_filename))
+    OPEN(UNIT=unit_number, FILE=TRIM(sid_filename))
 
     gcm_to_im_direction = .TRUE.
 
     ! Ignoring the header while reading the header (the case numbers just refer to the line numbers in the header file):
     DO passing_header_line = 1, 55
      IF(C%suppress_check_on_scan_parameters) THEN
-      READ(UNIT=118, FMT='(A)') end_of_line
+      READ(UNIT=unit_number, FMT='(A)') end_of_line
      ELSE
       SELECT CASE(passing_header_line)
       CASE(2)
        ! Detect the mappping direction:
-       READ(UNIT=118, FMT='(A)') end_of_line
+       READ(UNIT=unit_number, FMT='(A)') end_of_line
        IF(TRIM(end_of_line) == '#  i  j  N  N(m  n  distance)') gcm_to_im_direction = .FALSE.
       CASE(14)
        IF(gcm_to_im_direction) THEN
-        CALL read_and_compare_header_line_with_string( 118, C%gcm_input_filename                              , 'gcm_input_filename_config')
+        CALL read_and_compare_header_line_with_string( unit_number, C%gcm_input_filename                              , 'gcm_input_filename_config')
        ELSE
-        CALL read_and_compare_header_line_with_string( 118, C%im_input_filename                               , 'im_input_filename_config')
+        CALL read_and_compare_header_line_with_string( unit_number, C%im_input_filename                               , 'im_input_filename_config')
        END IF
       CASE(16)
-       CALL read_and_compare_header_line_with_integer(118, C%NLON                                             , 'NLON_config')
+       CALL read_and_compare_header_line_with_integer(unit_number, C%NLON                                             , 'NLON_config')
       CASE(17)
-       CALL read_and_compare_header_line_with_integer(118, C%NLAT                                             , 'NLAT_config')
+       CALL read_and_compare_header_line_with_integer(unit_number, C%NLAT                                             , 'NLAT_config')
       CASE(18)
-       CALL read_and_compare_header_line_with_integer(118, C%NX                                               , 'NX_config')
+       CALL read_and_compare_header_line_with_integer(unit_number, C%NX                                               , 'NX_config')
       CASE(19)
-       CALL read_and_compare_header_line_with_integer(118, C%NY                                               , 'NY_config')
+       CALL read_and_compare_header_line_with_integer(unit_number, C%NY                                               , 'NY_config')
       CASE(20)
-       CALL read_and_compare_header_line_with_real(   118, C%dx                                               , 'dx_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%dx                                               , 'dx_config')
       CASE(21)
-       CALL read_and_compare_header_line_with_real(   118, C%dy                                               , 'dy_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%dy                                               , 'dy_config')
       CASE(22)
        IF(C%choice_projection_method == 'rotation_projection') THEN
-        CALL read_and_compare_header_line_with_real(  118, C%shift_x_coordinate_rotation_projection           , 'shift_x_coordinate_rotation_projection_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%shift_x_coordinate_rotation_projection           , 'shift_x_coordinate_rotation_projection_config')
        ELSE
-        CALL read_and_compare_header_line_with_real(  118, C%radians_to_degrees * C%lambda_M                  , 'lambda_M_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%radians_to_degrees * C%lambda_M                  , 'lambda_M_config')
        END IF
       CASE(23)
        IF(C%choice_projection_method == 'rotation_projection') THEN
-        CALL read_and_compare_header_line_with_real(  118, C%shift_y_coordinate_rotation_projection           , 'shift_y_coordinate_rotation_projection_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%shift_y_coordinate_rotation_projection           , 'shift_y_coordinate_rotation_projection_config')
        ELSE
-        CALL read_and_compare_header_line_with_real(  118, C%radians_to_degrees * C%phi_M                     , 'phi_M_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%radians_to_degrees * C%phi_M                     , 'phi_M_config')
        END IF
       CASE(24)
        IF(C%choice_projection_method == 'rotation_projection') THEN
-        READ(UNIT=118, FMT='(A)') end_of_line
+        READ(UNIT=unit_number, FMT='(A)') end_of_line
         ELSE
         IF(C%level_of_automatic_oblimap_scanning < 4) THEN
-         CALL read_and_compare_header_line_with_real( 118, C%radians_to_degrees * C%alpha_stereographic       , 'alpha_stereographic_config')
+         CALL read_and_compare_header_line_with_real( unit_number, C%radians_to_degrees * C%alpha_stereographic       , 'alpha_stereographic_config')
         ELSE
          ! No check because the automatic oblimap scanning has overruled the config value during the scan.
-         READ(UNIT=118, FMT='(A)') end_of_line
+         READ(UNIT=unit_number, FMT='(A)') end_of_line
         END IF
        END IF
       CASE(25)
        SELECT CASE(C%choice_projection_method)
        CASE('rotation_projection')
-       CALL read_and_compare_header_line_with_real(   118, C%radians_to_degrees * C%theta_rotation_projection, 'theta_rotation_projection_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%radians_to_degrees * C%theta_rotation_projection, 'theta_rotation_projection_config')
        CASE('oblique_stereographic_projection','oblique_stereographic_projection_snyder','oblique_lambert_equal-area_projection_snyder')
-        CALL read_and_compare_header_line_with_real(  118, C%earth_radius                                     , 'earth_radius_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%earth_radius                                     , 'earth_radius_config')
        CASE('oblique_stereographic_projection_ellipsoid_snyder','oblique_lambert_equal-area_projection_ellipsoid_snyder')
-        CALL read_and_compare_header_line_with_real(  118, C%a                                                , 'ellipsoid_semi_major_axis_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%a                                                , 'ellipsoid_semi_major_axis_config')
        END SELECT
       CASE(26)
        SELECT CASE(C%choice_projection_method)
        CASE('rotation_projection','oblique_stereographic_projection','oblique_stereographic_projection_snyder','oblique_lambert_equal-area_projection_snyder')
-        READ(UNIT=118, FMT='(A)') end_of_line
+        READ(UNIT=unit_number, FMT='(A)') end_of_line
        CASE('oblique_stereographic_projection_ellipsoid_snyder','oblique_lambert_equal-area_projection_ellipsoid_snyder')
-        CALL read_and_compare_header_line_with_real(  118, C%e                                                , 'ellipsoid_eccentricity_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%e                                                , 'ellipsoid_eccentricity_config')
        END SELECT
       CASE(27)
-       CALL read_and_compare_header_line_with_string( 118, C%choice_projection_method                         , 'choice_projection_method_config')
+       CALL read_and_compare_header_line_with_string( unit_number, C%choice_projection_method                         , 'choice_projection_method_config')
       CASE(29)
-       CALL read_and_compare_header_line_with_logical(118, C%enable_shift_im_grid                             , 'enable_shift_im_grid_config')
+       CALL read_and_compare_header_line_with_logical(unit_number, C%enable_shift_im_grid                             , 'enable_shift_im_grid_config')
       CASE(30)
-       CALL read_and_compare_header_line_with_real(   118, C%shift_x_coordinate_im_grid                       , 'shift_x_coordinate_im_grid_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%shift_x_coordinate_im_grid                       , 'shift_x_coordinate_im_grid_config')
       CASE(31)
-       CALL read_and_compare_header_line_with_real(   118, C%shift_y_coordinate_im_grid                       , 'shift_y_coordinate_im_grid_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%shift_y_coordinate_im_grid                       , 'shift_y_coordinate_im_grid_config')
       CASE(32)
-       CALL read_and_compare_header_line_with_real(   118, C%alternative_lambda_for_center_im_grid            , 'alternative_lambda_for_center_im_grid_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%alternative_lambda_for_center_im_grid            , 'alternative_lambda_for_center_im_grid_config')
       CASE(33)
-       CALL read_and_compare_header_line_with_real(   118, C%alternative_phi_for_center_im_grid               , 'alternative_phi_for_center_im_grid_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%alternative_phi_for_center_im_grid               , 'alternative_phi_for_center_im_grid_config')
       CASE(35)
-       CALL read_and_compare_header_line_with_real(   118, C%unit_conversion_x_ax                             , 'unit_conversion_x_ax_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%unit_conversion_x_ax                             , 'unit_conversion_x_ax_config')
       CASE(36)
-       CALL read_and_compare_header_line_with_real(   118, C%unit_conversion_y_ax                             , 'unit_conversion_y_ax_config')
+       CALL read_and_compare_header_line_with_real(   unit_number, C%unit_conversion_y_ax                             , 'unit_conversion_y_ax_config')
       CASE(37)
-       CALL read_and_compare_header_line_with_logical(118, C%use_prefabricated_im_grid_coordinates            , 'use_prefabricated_im_grid_coordinates_config')
+       CALL read_and_compare_header_line_with_logical(unit_number, C%use_prefabricated_im_grid_coordinates            , 'use_prefabricated_im_grid_coordinates_config')
       CASE(38)
        IF(C%use_prefabricated_im_grid_coordinates) THEN
-        CALL read_and_compare_header_line_with_string( 118, C%prefabricated_im_grid_filename                  , 'prefabricated_im_grid_filename_config')
+        CALL read_and_compare_header_line_with_string( unit_number, C%prefabricated_im_grid_filename                  , 'prefabricated_im_grid_filename_config')
        ELSE
-        READ(UNIT=118, FMT='(A)') end_of_line
+        READ(UNIT=unit_number, FMT='(A)') end_of_line
        END IF
       CASE(40)
-       CALL read_and_compare_header_line_with_integer(118, C%level_of_automatic_oblimap_scanning              , 'level_of_automatic_oblimap_scanning_config')
+       CALL read_and_compare_header_line_with_integer(unit_number, C%level_of_automatic_oblimap_scanning              , 'level_of_automatic_oblimap_scanning_config')
       CASE(41)
        IF(C%level_of_automatic_oblimap_scanning < 1) THEN
-        CALL read_and_compare_header_line_with_logical(118, C%data_set_is_cyclic_in_longitude                 , 'data_set_is_cyclic_in_longitude_config')
+        CALL read_and_compare_header_line_with_logical(unit_number, C%data_set_is_cyclic_in_longitude                 , 'data_set_is_cyclic_in_longitude_config')
        ELSE
         ! No check because the automatic oblimap scanning has overruled the config value during the scan.
-        READ(UNIT=118, FMT='(A)') end_of_line
+        READ(UNIT=unit_number, FMT='(A)') end_of_line
        END IF
       CASE(42)
        IF(C%level_of_automatic_oblimap_scanning < 2) THEN
-        CALL read_and_compare_header_line_with_logical(118, C%choice_quadrant_method                          , 'choice_quadrant_method_config')
+        CALL read_and_compare_header_line_with_logical(unit_number, C%choice_quadrant_method                          , 'choice_quadrant_method_config')
        ELSE
         ! No check because the automatic oblimap scanning has overruled the config value during the scan.
-        READ(UNIT=118, FMT='(A)') end_of_line
+        READ(UNIT=unit_number, FMT='(A)') end_of_line
        END IF
       CASE(43)
        IF(C%choice_quadrant_method .OR. C%level_of_automatic_oblimap_scanning < 3) THEN
         ! No check because quadrant method is used or the automatic oblimap scanning has overruled the config value during the scan.
-        READ(UNIT=118, FMT='(A)') end_of_line
+        READ(UNIT=unit_number, FMT='(A)') end_of_line
        ELSE
-        CALL read_and_compare_header_line_with_real(  118, C%R_search_interpolation                           , 'R_search_interpolation_config')
+        CALL read_and_compare_header_line_with_real(  unit_number, C%R_search_interpolation                           , 'R_search_interpolation_config')
        END IF
       CASE(44)
-       CALL read_and_compare_header_line_with_integer(118, C%scan_search_block_size                           , 'scan_search_block_size_config')
+       CALL read_and_compare_header_line_with_integer(unit_number, C%scan_search_block_size                           , 'scan_search_block_size_config')
       CASE(45)
-       CALL read_and_compare_header_line_with_integer(118, C%scan_search_block_size_step                      , 'scan_search_block_size_step_config')
+       CALL read_and_compare_header_line_with_integer(unit_number, C%scan_search_block_size_step                      , 'scan_search_block_size_step_config')
       CASE(47)
-       CALL read_and_compare_header_line_with_logical(118, C%vincenty_method_for_ellipsoid                    , 'vincenty_method_for_ellipsoid_config')
+       CALL read_and_compare_header_line_with_logical(unit_number, C%vincenty_method_for_ellipsoid                    , 'vincenty_method_for_ellipsoid_config')
       CASE DEFAULT
-       READ(UNIT=118, FMT='(A)') end_of_line
+       READ(UNIT=unit_number, FMT='(A)') end_of_line
       END SELECT
      END IF
     END DO
 
     ! Reading the total number of mapped points. Each line in the file contains the necessary information of all the
     ! contributing points for one target grid point. The number of mapped (or target) points equals the number of lines
-    READ(UNIT=118, FMT='(I20)') ddo%maximum_contributions
-    READ(UNIT=118, FMT='(I20)') ddo%total_mapped_points
-    READ(UNIT=118, FMT='(A  )') end_of_line
+    READ(UNIT=unit_number, FMT='(I20)') ddo%maximum_contributions
+    READ(UNIT=unit_number, FMT='(I20)') ddo%total_mapped_points
+    READ(UNIT=unit_number, FMT='(A  )') end_of_line
    !WRITE(UNIT=*, FMT='(2(A, I12))') ' Number of mapped points is: ', ddo%total_mapped_points, ', maximum amount of contributions for one mapped point = ', ddo%maximum_contributions
 
     ALLOCATE(ddo%row_index_destination   (ddo%total_mapped_points                          ), &
@@ -352,24 +362,89 @@ CONTAINS
              ddo%distance                (ddo%total_mapped_points,ddo%maximum_contributions), &
              STAT=status)
     IF(status /= 0) THEN
-     WRITE(UNIT=*, FMT='(/2A/)') C%OBLIMAP_ERROR, ' message from: oblimap_read_sid_file(): Could not allocate enough memory for the scanned struct.'
+     WRITE(UNIT=*, FMT='(/2A/)') C%OBLIMAP_ERROR, ' message from: oblimap_read_sid_file(): Could not allocate enough memory for the Dynamic Data Object (DDO).'
      STOP
     END IF
 
     ! See equation (2.17) and equation (2.19) in Reerink et al. (2010), both cases are treated with the same code:
     DO p = 1, ddo%total_mapped_points
-     READ(UNIT=118, FMT='(3I6)', ADVANCE='NO') ddo%row_index_destination(p), ddo%column_index_destination(p), ddo%total_contributions(p)
+     READ(UNIT=unit_number, FMT='(3I6)', ADVANCE='NO') ddo%row_index_destination(p), ddo%column_index_destination(p), ddo%total_contributions(p)
 
      DO q = 1, ddo%total_contributions(p)
-      READ(UNIT=118, FMT='(2I6,E23.15)', ADVANCE='NO') ddo%row_index(p,q), ddo%column_index(p,q), ddo%distance(p,q)
+      READ(UNIT=unit_number, FMT='(2I6,E23.15)', ADVANCE='NO') ddo%row_index(p,q), ddo%column_index(p,q), ddo%distance(p,q)
      END DO
 
-     READ(UNIT=118, FMT='(A)') end_of_line
+     READ(UNIT=unit_number, FMT='(A)') end_of_line
     END DO
 
     ! Closing the SID file:
-    CLOSE(UNIT=118)
+    CLOSE(UNIT=unit_number)
   END SUBROUTINE oblimap_read_sid_file
+
+
+
+  SUBROUTINE oblimap_read_sid_content_file(unit_number, sid_content_filename, maximum_contributions, total_mapped_points, ddo)
+    ! This routine reads the scanned projection data from the SID content file into the Dynamic Data Object (DDO). The DDO is allocated here.
+    ! This DDO is used in the fast mapping routine.
+    USE oblimap_configuration_module, ONLY : C
+    IMPLICIT NONE
+
+    ! Input variables:
+    INTEGER               , INTENT(IN)  :: unit_number
+    CHARACTER(LEN=*)      , INTENT(IN)  :: sid_content_filename  ! The name of the file which contains the data of the SID file
+    INTEGER               , INTENT(IN)  :: maximum_contributions ! The maximum number of contributions encountered
+    INTEGER               , INTENT(IN)  :: total_mapped_points   ! The number of total mapped points
+
+    ! Output variables:
+    TYPE(oblimap_ddo_type), INTENT(OUT) :: ddo                   ! The DDO which contains all the scanned contributions
+
+    ! Local variables:
+    LOGICAL                             :: file_exists
+    CHARACTER(256)                      :: end_of_line           ! A variable with which the end of line can be read
+    INTEGER                             :: status                ! Variable for checking the allocation status
+    INTEGER                             :: p                     ! Counter which counts over the affected/mapped/target points
+    INTEGER                             :: q                     ! Counter over the contributing points at each target point
+
+    ! Check file existence:
+    INQUIRE(EXIST = file_exists, FILE = sid_content_filename)
+    IF(.NOT. file_exists) THEN
+     WRITE(UNIT=*,FMT='(/4A/, 2A/)') C%OBLIMAP_ERROR, ' The file "', TRIM(sid_content_filename), '" does not exist.', &
+                                     '                This implies you have to set  scanning_mode_config = .TRUE.  in the config file: ', C%config_filename
+     STOP
+    END IF
+
+    ! Opening the SID content file:
+    OPEN(UNIT=unit_number, FILE=TRIM(sid_content_filename))
+
+    ddo%maximum_contributions = maximum_contributions
+    ddo%total_mapped_points   = total_mapped_points
+
+    ALLOCATE(ddo%row_index_destination   (ddo%total_mapped_points                          ), &
+             ddo%column_index_destination(ddo%total_mapped_points                          ), &
+             ddo%total_contributions     (ddo%total_mapped_points                          ), &
+             ddo%row_index               (ddo%total_mapped_points,ddo%maximum_contributions), &
+             ddo%column_index            (ddo%total_mapped_points,ddo%maximum_contributions), &
+             ddo%distance                (ddo%total_mapped_points,ddo%maximum_contributions), &
+             STAT=status)
+    IF(status /= 0) THEN
+     WRITE(UNIT=*, FMT='(/2A/)') C%OBLIMAP_ERROR, ' message from: oblimap_read_sid_content_file(): Could not allocate enough memory for the Dynamic Data Object (DDO).'
+     STOP
+    END IF
+
+    ! See equation (2.17) and equation (2.19) in Reerink et al. (2010), both cases are treated with the same code:
+    DO p = 1, ddo%total_mapped_points
+     READ(UNIT=unit_number, FMT='(3I6)', ADVANCE='NO') ddo%row_index_destination(p), ddo%column_index_destination(p), ddo%total_contributions(p)
+
+     DO q = 1, ddo%total_contributions(p)
+      READ(UNIT=unit_number, FMT='(2I6,E23.15)', ADVANCE='NO') ddo%row_index(p,q), ddo%column_index(p,q), ddo%distance(p,q)
+     END DO
+
+     READ(UNIT=unit_number, FMT='(A)') end_of_line
+    END DO
+
+    ! Closing the SID content file:
+    CLOSE(UNIT=unit_number)
+  END SUBROUTINE oblimap_read_sid_content_file
 
 
 

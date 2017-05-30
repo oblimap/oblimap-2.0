@@ -48,7 +48,7 @@
 MODULE oblimap_projection_module
 
 CONTAINS
-  SUBROUTINE oblique_sg_projection(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+  SUBROUTINE oblique_sg_projection(lambda, phi, x_IM_P_prime, y_IM_P_prime, k_P)
     ! This subroutine projects with an oblique stereographic projection the longitude-latitude
     ! coordinates which coincide with the GCM grid points to the rectangular IM coordinate
     ! system, with coordinates (x,y).
@@ -60,17 +60,18 @@ CONTAINS
     IMPLICIT NONE
 
     ! Input variables:
-    REAL(dp), INTENT(IN)  :: lambda        ! in degrees
-    REAL(dp), INTENT(IN)  :: phi           ! in degrees
+    REAL(dp), INTENT(IN)            :: lambda        ! in degrees
+    REAL(dp), INTENT(IN)            :: phi           ! in degrees
 
     ! Output variables:
-    REAL(dp), INTENT(OUT) :: x_IM_P_prime  ! in meter
-    REAL(dp), INTENT(OUT) :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: x_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT), OPTIONAL :: k_P           ! Length scale factor [-],  k in Snyder (1987)
 
     ! Local variables:
-    REAL(dp)              :: phi_P         ! in radians
-    REAL(dp)              :: lambda_P      ! in radians
-    REAL(dp)              :: t_P_prime
+    REAL(dp)                        :: phi_P         ! in radians
+    REAL(dp)                        :: lambda_P      ! in radians
+    REAL(dp)                        :: t_P_prime
 
     ! For North and South Pole: C%lambda_M = 0._dp, to generate the correct IM coordinate
     ! system, see equation (2.3) or equation (A.53) in Reerink et al. (2010).
@@ -85,6 +86,9 @@ CONTAINS
     ! See equations (2.4-2.5) or equations (A.54-A.55) in Reerink et al. (2010):
     x_IM_P_prime =  C%earth_radius * (COS(phi_P) * SIN(lambda_P - C%lambda_M)) * t_P_prime
     y_IM_P_prime =  C%earth_radius * (SIN(phi_P) * COS(C%phi_M) - (COS(phi_P) * SIN(C%phi_M)) * COS(lambda_P - C%lambda_M)) * t_P_prime
+
+    ! See equation (21-4) on page 157 in Snyder (1987):
+    IF(PRESENT(k_P)) k_P = (1._dp + COS(C%alpha_stereographic)) / (1._dp + SIN(C%phi_M) * SIN(phi_P) + COS(C%phi_M) * COS(phi_P) * COS(lambda_P - C%lambda_M))
   END SUBROUTINE oblique_sg_projection
 
 
@@ -309,7 +313,7 @@ CONTAINS
 
 
 
-  SUBROUTINE oblique_sg_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+  SUBROUTINE oblique_sg_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime, k_P)
     ! This subroutine projects with Snyder's oblique stereographic projection for the ellipsoid
     ! the the longitude-latitude coordinates which coincide with the GCM grid points to
     ! the rectangular IM coordinate system, with coordinates (x,y).
@@ -323,18 +327,19 @@ CONTAINS
     IMPLICIT NONE
 
     ! Input variables:
-    REAL(dp), INTENT(IN)  :: lambda        ! in degrees
-    REAL(dp), INTENT(IN)  :: phi           ! in degrees
+    REAL(dp), INTENT(IN)            :: lambda        ! in degrees
+    REAL(dp), INTENT(IN)            :: phi           ! in degrees
 
     ! Output variables:
-    REAL(dp), INTENT(OUT) :: x_IM_P_prime  ! in meter
-    REAL(dp), INTENT(OUT) :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: x_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT), OPTIONAL :: k_P           ! Length scale factor [-],  k in Snyder (1987)
 
     ! Local variables:
-    REAL(dp)              :: phi_P         ! in radians,  phi    in Snyder (1987)
-    REAL(dp)              :: lambda_P      ! in radians,  lambda in Snyder (1987)
-    REAL(dp)              :: chi_P         ! in radians,  chi    in Snyder (1987)
-    REAL(dp)              :: A
+    REAL(dp)                        :: phi_P         ! in radians,  phi    in Snyder (1987)
+    REAL(dp)                        :: lambda_P      ! in radians,  lambda in Snyder (1987)
+    REAL(dp)                        :: chi_P         ! in radians,  chi    in Snyder (1987)
+    REAL(dp)                        :: A
 
     ! For North and South Pole: C%lambda_M = 0._dp, to generate the correct IM coordinate
     ! system, see equation (2.3) or equation (A.53) in Reerink et al. (2010).
@@ -342,8 +347,13 @@ CONTAINS
     IF(C%polar_projection) THEN
      ! The polar case is excepted from the oblique formula's, see page 161 Snyder (1987)
 
-     ! Output: x_IM_P_prime, y_IM_P_prime
-     CALL polar_sg_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+     IF(PRESENT(k_P)) THEN
+      ! Output: x_IM_P_prime, y_IM_P_prime, k_P
+      CALL polar_sg_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime, k_P)
+     ELSE
+      ! Output: x_IM_P_prime, y_IM_P_prime
+      CALL polar_sg_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+     END IF
     ELSE
      ! The oblique case, see page 160 Snyder (1987)
 
@@ -360,12 +370,15 @@ CONTAINS
      ! See equations (21-24) and (21-25) on page 160 in Snyder (1987):
      x_IM_P_prime =  A * COS(chi_P) * SIN(lambda_P - C%lambda_M)
      y_IM_P_prime =  A * (COS(C%chi_M) * SIN(chi_P) - SIN(C%chi_M) * COS(chi_P) * COS(lambda_P - C%lambda_M))
+
+     ! See equation (21-26) on page 160 in Snyder (1987):
+     IF(PRESENT(k_P)) k_P = (A * COS(chi_P)) / (C%a * (COS(phi_P) / SQRT(1.0_dp - (C%e * SIN(phi_P))**2)))
     END IF
   END SUBROUTINE oblique_sg_projection_ellipsoid_snyder
 
 
 
-  SUBROUTINE polar_sg_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+  SUBROUTINE polar_sg_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime, k_P)
     ! This subroutine projects with Snyder's polar stereographic projection for the ellipsoid
     ! the the longitude-latitude coordinates which coincide with the GCM grid points to
     ! the rectangular IM coordinate system, with coordinates (x,y). See Snyder (1987) p. 161.
@@ -382,23 +395,24 @@ CONTAINS
     IMPLICIT NONE
 
     ! Input variables:
-    REAL(dp), INTENT(IN)  :: lambda        ! in degrees
-    REAL(dp), INTENT(IN)  :: phi           ! in degrees
+    REAL(dp), INTENT(IN)            :: lambda        ! in degrees
+    REAL(dp), INTENT(IN)            :: phi           ! in degrees
 
     ! Output variables:
-    REAL(dp), INTENT(OUT) :: x_IM_P_prime  ! in meter
-    REAL(dp), INTENT(OUT) :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: x_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT), OPTIONAL :: k_P           ! Length scale factor [-],  k in Snyder (1987)
 
     ! Local variables:
-    REAL(dp)              :: phi_P         ! in radians
-    REAL(dp)              :: lambda_P      ! in radians
-    REAL(dp)              :: phi_C         ! in radians,  phi_c  in Snyder (1987), the standard parallel
-    REAL(dp)              :: t_P           ! 
-    REAL(dp)              :: t_C           ! 
-    REAL(dp)              :: m_C           ! 
-    REAL(dp)              :: rho           ! 
-    REAL(dp)              :: pf            ! polar factor: -1.0 for SP and +1.0 for NP
-    REAL(dp)              :: k0            ! 
+    REAL(dp)                        :: phi_P         ! in radians
+    REAL(dp)                        :: lambda_P      ! in radians
+    REAL(dp)                        :: phi_C         ! in radians,  phi_c  in Snyder (1987), the standard parallel
+    REAL(dp)                        :: t_P           ! 
+    REAL(dp)                        :: t_C           ! 
+    REAL(dp)                        :: m_C           ! 
+    REAL(dp)                        :: rho           ! 
+    REAL(dp)                        :: pf            ! polar factor: -1.0 for SP and +1.0 for NP
+    REAL(dp)                        :: k0            ! Length scale factor at center M [-]
 
     IF(C%phi_M == - 90.0_dp * C%degrees_to_radians) THEN
      pf = -1.0_dp                                       ! The polar factor for the SP
@@ -431,6 +445,8 @@ CONTAINS
 
     x_IM_P_prime   =   rho * SIN(lambda_P * pf - C%lambda_M * pf) * pf                                                                                           ! (21-30) on page 161 in Snyder (1987)
     y_IM_P_prime   = - rho * COS(lambda_P * pf - C%lambda_M * pf) * pf                                                                                           ! (21-31) on page 161 in Snyder (1987)
+
+    IF(PRESENT(k_P)) k_P = rho / (C%a * (COS(phi_P * pf) / SQRT(1.0_dp - (C%e * SIN(phi_P * pf))**2)))                                                           ! (21-32) on page 161 in Snyder (1987)
   END SUBROUTINE polar_sg_projection_ellipsoid_snyder
 
 
@@ -579,7 +595,7 @@ CONTAINS
 
 
 
-  SUBROUTINE oblique_laea_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+  SUBROUTINE oblique_laea_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime, k_P)
     ! This subroutine projects with Snyder's oblique Lambert azimuthal equal-area projection for
     ! the ellipsoid the longitude-latitude coordinates which coincide with the GCM grid points to
     ! the rectangular IM coordinate system, with coordinates (x,y).
@@ -593,19 +609,20 @@ CONTAINS
     IMPLICIT NONE
 
     ! Input variables:
-    REAL(dp), INTENT(IN)  :: lambda        ! in degrees
-    REAL(dp), INTENT(IN)  :: phi           ! in degrees
+    REAL(dp), INTENT(IN)            :: lambda        ! in degrees
+    REAL(dp), INTENT(IN)            :: phi           ! in degrees
 
     ! Output variables:
-    REAL(dp), INTENT(OUT) :: x_IM_P_prime  ! in meter
-    REAL(dp), INTENT(OUT) :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: x_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT), OPTIONAL :: k_P           ! Length scale factor [-],  k in Snyder (1987)
 
     ! Local variables:
-    REAL(dp)              :: phi_P         ! in radians
-    REAL(dp)              :: lambda_P      ! in radians
-    REAL(dp)              :: q_P           ! in radians,   ! q in Snyder (1987)
-    REAL(dp)              :: beta
-    REAL(dp)              :: B
+    REAL(dp)                        :: phi_P         ! in radians
+    REAL(dp)                        :: lambda_P      ! in radians
+    REAL(dp)                        :: q_P           ! in radians,  q in Snyder (1987)
+    REAL(dp)                        :: beta
+    REAL(dp)                        :: B
 
     ! For North and South Pole: C%lambda_M = 0._dp, to generate the correct IM coordinate
     ! system, see equation (2.3) or equation (A.53) in Reerink et al. (2010).
@@ -613,8 +630,13 @@ CONTAINS
     IF(C%polar_projection) THEN
      ! The polar case is excepted from the oblique formula's, see page 187-188 Snyder (1987)
 
-     ! Output: x_IM_P_prime, y_IM_P_prime
-     CALL polar_laea_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+     IF(PRESENT(k_P)) THEN
+      ! Output: x_IM_P_prime, y_IM_P_prime, k_P
+      CALL polar_laea_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime, k_P)
+     ELSE
+      ! Output: x_IM_P_prime, y_IM_P_prime
+      CALL polar_laea_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+     END IF
     ELSE
      ! The oblique case, see page 160 Snyder (1987)
 
@@ -637,7 +659,7 @@ CONTAINS
 
 
 
-  SUBROUTINE polar_laea_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime)
+  SUBROUTINE polar_laea_projection_ellipsoid_snyder(lambda, phi, x_IM_P_prime, y_IM_P_prime, k_P)
     ! This subroutine projects with Snyder's polar Lambert azimuthal equal-area projection for
     ! the ellipsoid the longitude-latitude coordinates which coincide with the GCM grid points to
     ! the rectangular IM coordinate system, with coordinates (x,y). See Snyder (1987) p. 188.
@@ -654,19 +676,20 @@ CONTAINS
     IMPLICIT NONE
 
     ! Input variables:
-    REAL(dp), INTENT(IN)  :: lambda        ! in degrees
-    REAL(dp), INTENT(IN)  :: phi           ! in degrees
+    REAL(dp), INTENT(IN)            :: lambda        ! in degrees
+    REAL(dp), INTENT(IN)            :: phi           ! in degrees
 
     ! Output variables:
-    REAL(dp), INTENT(OUT) :: x_IM_P_prime  ! in meter
-    REAL(dp), INTENT(OUT) :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: x_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT)           :: y_IM_P_prime  ! in meter
+    REAL(dp), INTENT(OUT), OPTIONAL :: k_P           ! Length scale factor [-], k in Snyder
 
     ! Local variables:
-    REAL(dp)              :: phi_P         ! in radians
-    REAL(dp)              :: lambda_P      ! in radians
-    REAL(dp)              :: q_P           ! in radians,   ! q in Snyder (1987)
-    REAL(dp)              :: rho
-    REAL(dp)              :: pf            ! polar factor: -1.0 for SP and +1.0 for NP
+    REAL(dp)                        :: phi_P         ! in radians
+    REAL(dp)                        :: lambda_P      ! in radians
+    REAL(dp)                        :: q_P           ! in radians,  q in Snyder (1987)
+    REAL(dp)                        :: rho
+    REAL(dp)                        :: pf            ! polar factor: -1.0 for SP and +1.0 for NP
 
     IF(C%phi_M == - 90.0_dp * C%degrees_to_radians) THEN
      pf = -1.0_dp                                       ! The polar factor for the SP
@@ -686,6 +709,10 @@ CONTAINS
     ! See equation (21-30), (21-31) and (24-24) on page 188 in Snyder (1987):
     x_IM_P_prime =   rho * SIN(lambda_P - C%lambda_M)
     y_IM_P_prime = - rho * COS(lambda_P - C%lambda_M) * pf
+
+    ! See equation (21-32) on page 188 in Snyder (1987):
+    IF(PRESENT(k_P)) k_P = rho / (C%a * (COS(phi_P     ) / SQRT(1.0_dp - (C%e * SIN(phi_P     ))**2)))
+   !IF(PRESENT(k_P)) k_P = rho / (C%a * (COS(phi_P * pf) / SQRT(1.0_dp - (C%e * SIN(phi_P * pf))**2))) ! Check if perhaps this is intended by Snyder, but makes no difference.
   END SUBROUTINE polar_laea_projection_ellipsoid_snyder
 
 

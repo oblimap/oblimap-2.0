@@ -46,19 +46,6 @@
 !
 
 MODULE oblimap_scan_contributions_module
-  USE oblimap_configuration_module, ONLY: dp
-  IMPLICIT NONE
-
-  TYPE triplet
-    INTEGER  :: row_index     ! row index of nearest point within one quadrant
-    INTEGER  :: column_index  ! column index of nearest point within one quadrant
-    REAL(dp) :: distance      ! distance of this nearest point relative to the IM point (m,n)
-  END TYPE triplet
-
-  ! In case there are no contributions, the distance is set to a huge number: C%large_distance = 1.0E8_dp, and the indices to -999999
- !TYPE(triplet), PARAMETER :: no_contribution = triplet(-999999, -999999, 1.0E8_dp)
-
-
 
 CONTAINS
 
@@ -75,6 +62,7 @@ CONTAINS
     ! file. With the indices and the distances of the contributing points the GCM fields can be mapped fast and simultaneously
     ! on to the IM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
+    USE oblimap_mapping_module, ONLY: triplet
     IMPLICIT NONE
 
     ! Input variables:
@@ -426,6 +414,7 @@ CONTAINS
     ! file. With the indices and the distances of the contributing points the GCM fields can be mapped fast and simultaneously
     ! on to the IM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
+    USE oblimap_mapping_module, ONLY: triplet
     IMPLICIT NONE
 
     ! Input variables:
@@ -793,6 +782,7 @@ CONTAINS
     ! C%sid_filename file. With the indices and the distances of the contributing points the IM fields can be
     ! mapped fast and simultaneously on to the GCM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
+    USE oblimap_mapping_module, ONLY: triplet
     IMPLICIT NONE
 
     ! Input variables:
@@ -1036,6 +1026,7 @@ CONTAINS
     ! C%sid_filename file. With the indices and the distances of the contributing points the IM fields can be
     ! mapped fast and simultaneously on to the GCM grid.
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
+    USE oblimap_mapping_module, ONLY: triplet
     IMPLICIT NONE
 
     ! Input variables:
@@ -1289,6 +1280,7 @@ CONTAINS
   SUBROUTINE write_sid_file(advised_scan_parameter, highest_scan_search_block_size, amount_of_mapped_points, number_points_no_contribution, maximum_contributions, gcm_to_im_direction)
     ! This routine writes the SID file (the file which contains the scanned indices and distances).
     USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
+    USE oblimap_mapping_module, ONLY: oblimap_ddo_type, oblimap_read_sid_content_file, oblimap_deallocate_ddo
     IMPLICIT NONE
 
     ! Input variables:
@@ -1300,7 +1292,14 @@ CONTAINS
     LOGICAL                           , INTENT(IN) :: gcm_to_im_direction                   ! This variable has to be TRUE for the GCM -> IM mapping direction, and FALSE vice versa.
 
     ! Local variables:
-    INTEGER                                        :: unit_number = 107
+    INTEGER                           , PARAMETER  :: unit_number = 107
+    TYPE(oblimap_ddo_type)                         :: ddo                                   ! The DDO containing all the scanned contributions
+    INTEGER                                        :: p                                     ! Counter which counts over the affected/mapped/target points
+    INTEGER                                        :: q                                     ! Counter over the contributing points at each target point
+
+    ! Reading the contributions of the scanned projection data into the Dynamic Data Object (DDO):
+    ! Output: ddo
+    CALL oblimap_read_sid_content_file(119, C%filename_sid_content, maximum_contributions, amount_of_mapped_points, ddo)
 
     ! Opening the SID file:
     OPEN(UNIT=unit_number, FILE=TRIM(C%sid_filename))
@@ -1413,12 +1412,26 @@ CONTAINS
     END IF
     WRITE(UNIT=unit_number,   FMT='( A        )') '# '
 
+    ! See equation (2.17) and equation (2.19) in Reerink et al. (2010), both cases are treated with the same code:
+    DO p = 1, ddo%total_mapped_points
+     WRITE(UNIT=unit_number, FMT='(3I6)', ADVANCE='NO') ddo%row_index_destination(p), ddo%column_index_destination(p), ddo%total_contributions(p)
+
+     DO q = 1, ddo%total_contributions(p)
+      WRITE(UNIT=unit_number, FMT='(2I6,E23.15)', ADVANCE='NO') ddo%row_index(p,q), ddo%column_index(p,q), ddo%distance(p,q)
+     END DO
+
+     WRITE(UNIT=unit_number, FMT='(A)') ''
+    END DO
+
     ! Closing the the SID file:
     CLOSE(UNIT=unit_number)
 
     ! Appending the content to the header:
-    CALL SYSTEM('cat '//TRIM(C%filename_sid_content)//' >> '//TRIM(C%sid_filename))
+   !CALL SYSTEM('cat '//TRIM(C%filename_sid_content)//' >> '//TRIM(C%sid_filename))
     CALL SYSTEM('rm -f '//TRIM(C%filename_sid_content))
+
+    ! Output: -
+    CALL oblimap_deallocate_ddo(ddo)
   END SUBROUTINE write_sid_file
 
 
