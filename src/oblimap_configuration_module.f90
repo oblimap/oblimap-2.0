@@ -867,7 +867,7 @@ CONTAINS
 
     ! Unit used for the temporal file containing the fast input file content:
     C%unit_scanning_file_content                     = 14111984
-    C%filename_sid_content                           = 'content_sid_file.txt'
+    C%filename_sid_content                           = 'content-sid-file.txt'
 
     ! A predefined large distance (more then the earth circumference) used to initialize distances when searching the nearest projected points:
     C%large_distance                                 = 1.0E8_dp
