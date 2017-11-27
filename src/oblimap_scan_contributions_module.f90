@@ -1426,13 +1426,25 @@ CONTAINS
     ! Closing the the SID file:
     CLOSE(UNIT=unit_number)
 
-    ! Appending the content to the header:
-   !CALL SYSTEM('cat '//TRIM(C%filename_sid_content)//' >> '//TRIM(C%sid_filename))
-    CALL SYSTEM('rm -f '//TRIM(C%filename_sid_content))
+    CALL remove_sid_content_file()
 
     ! Output: -
     CALL oblimap_deallocate_ddo(ddo)
   END SUBROUTINE write_sid_file
+
+
+
+  SUBROUTINE remove_sid_content_file()
+    ! This routine removes the SID content file.
+    USE oblimap_configuration_module, ONLY: C
+    IMPLICIT NONE
+
+    ! Opening the SID content file:
+    OPEN(UNIT=C%unit_scanning_file_content, FILE=TRIM(C%filename_sid_content))
+
+    ! Closing the the SID content file and remove it:
+    CLOSE(UNIT=C%unit_scanning_file_content, STATUS='delete')
+  END SUBROUTINE remove_sid_content_file
 
 
 
