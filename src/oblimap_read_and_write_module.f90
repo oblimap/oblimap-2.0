@@ -473,7 +473,7 @@ CONTAINS
 
   SUBROUTINE create_netcdf_for_gcm_grid(longitude_coordinates_of_gcm_grid_points, latitude_coordinates_of_gcm_grid_points, nc_for_dimensional_shape, nc)
     ! This routine creates a gcm netcdf file, the netcdf format is specified, the dimensions are written.
-    USE oblimap_configuration_module, ONLY: dp, C
+    USE oblimap_configuration_module, ONLY: dp, C, check_directory_existence
     IMPLICIT NONE
 
     ! Input variables:
@@ -483,6 +483,9 @@ CONTAINS
 
     ! Output variables:
     TYPE(oblimap_netcdf_file_type)            , INTENT(OUT) :: nc
+
+    ! Check whether the directory in the path of C%im_created_filename exists:
+    CALL check_directory_existence(C%im_created_filename)
 
     ! Output: nc
     CALL oblimap_create_netcdf_file(C%gcm_created_filename, C%number_of_mapped_fields, &
@@ -497,7 +500,7 @@ CONTAINS
 
   SUBROUTINE create_netcdf_for_im_grid(x_coordinates_of_im_grid_points, y_coordinates_of_im_grid_points, nc_for_dimensional_shape, nc)
     ! This routine creates an im netcdf file, the netcdf format is specified, the dimensions are written.
-    USE oblimap_configuration_module, ONLY: dp, C
+    USE oblimap_configuration_module, ONLY: dp, C, check_directory_existence
     IMPLICIT NONE
 
     ! Input variables:
@@ -507,6 +510,9 @@ CONTAINS
 
     ! Output variables:
     TYPE(oblimap_netcdf_file_type), INTENT(OUT) :: nc
+
+    ! Check whether the directory in the path of C%im_created_filename exists:
+    CALL check_directory_existence(C%im_created_filename)
 
     ! Output: nc
     CALL oblimap_create_netcdf_file(C%im_created_filename, C%number_of_mapped_fields, &
@@ -844,7 +850,7 @@ CONTAINS
     ! Continue or not if file exists:
     INQUIRE(EXIST = file_exists, FILE = file_name)
     IF(C%protect_file_overwriting .AND. file_exists) THEN
-     WRITE(UNIT=*,FMT='(5A)') 'ERROR: The file "', TRIM(file_name), '" already exists! Remove it and run again!'
+     WRITE(UNIT=*,FMT='(4A)') C%ERROR, ' The file "', TRIM(file_name), '" already exists! Remove it and run again!'
      STOP
     END IF
   END SUBROUTINE check_file_existence

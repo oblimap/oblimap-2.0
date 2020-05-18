@@ -965,6 +965,31 @@ CONTAINS
   END SUBROUTINE initialize_config_variables
 
 
+
+  SUBROUTINE check_directory_existence(full_string)
+    ! This subroutine checks whether the directory exists if a directory path is part of an filename.
+    IMPLICIT NONE
+
+    ! Input variables:
+    CHARACTER(LEN=*), INTENT(IN) :: full_string
+
+    ! Local variables:
+    INTEGER                      :: index_of_last_slash
+    LOGICAL                      :: file_exists
+
+    index_of_last_slash = INDEX(trim(full_string), '/', .TRUE.)
+
+    IF(index_of_last_slash /= 0) THEN
+     ! Abort in case the directry in the path of the filename does not exist:
+     INQUIRE(EXIST = file_exists, FILE = full_string(1:index_of_last_slash))
+     IF(.NOT. file_exists) THEN
+      WRITE(UNIT=*,FMT='(/6A/)') C%ERROR,' The directory "', TRIM(full_string(1:index_of_last_slash)), '" for the file "', TRIM(full_string), '" does not exists.'
+      STOP
+     END IF
+    END IF
+  END SUBROUTINE check_directory_existence
+
+
   SUBROUTINE oblimap_licence(program_name)
     IMPLICIT NONE
 

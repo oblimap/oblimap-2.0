@@ -78,7 +78,7 @@ CONTAINS
     ! The center of the IM grid will coincide with (lamda_M_config,phi_M_config), and the extensions of
     ! the IM grid are determined by the IM grid spacings C%dx and C%dy and the IM grid sizes C%NX and C%NY.
     !
-    USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
+    USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type, check_directory_existence
     USE oblimap_read_and_write_module, ONLY: oblimap_netcdf_file_type, oblimap_open_netcdf_file, create_netcdf_for_gcm_grid, oblimap_read_netcdf_fields, oblimap_write_netcdf_fields, oblimap_close_netcdf_file, reduce_dummy_dimensions
     USE oblimap_scan_contributions_module, ONLY: projecting_the_im_xy_coordinates_to_lonlat, determining_scan_parameters
     IMPLICIT NONE
@@ -94,6 +94,9 @@ CONTAINS
     TYPE(oblimap_netcdf_file_type)                                                       :: im_netcdf_file
     TYPE(oblimap_netcdf_file_type)                                                       :: gcm_netcdf_file
     TYPE(oblimap_scan_parameter_type)                                                    :: advised_scan_parameter
+
+    ! Check whether the directory in the path of C%gcm_created_filename exists:
+    CALL check_directory_existence(C%gcm_created_filename)
 
     ! Opening the IM netcdf file:
     ! Output: im_netcdf_file, x_coordinates_of_im_grid_points, y_coordinates_of_im_grid_points

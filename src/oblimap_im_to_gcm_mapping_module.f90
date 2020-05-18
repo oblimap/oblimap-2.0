@@ -98,7 +98,7 @@ CONTAINS
     ! gcm_field_*
     !   Contains the to and fro mapped GCM fields merged with the initial_gcm_field_*.
     !
-    USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type
+    USE oblimap_configuration_module, ONLY: dp, C, oblimap_scan_parameter_type, check_directory_existence
     USE oblimap_read_and_write_module, ONLY: oblimap_netcdf_file_type, oblimap_open_netcdf_file, initialize_im_coordinates, create_netcdf_for_gcm_grid, &
           oblimap_read_netcdf_fields, oblimap_write_netcdf_fields, oblimap_close_netcdf_file, reduce_dummy_dimensions
     USE oblimap_scan_contributions_module, ONLY: make_mapping_participation_mask, scan_with_radius_method_im_to_gcm, scan_with_quadrant_method_im_to_gcm, &
@@ -127,6 +127,9 @@ CONTAINS
     TYPE(oblimap_ddo_type)                                                                   :: oblimap_ddo                      ! The DDO containing all the scanned contributions
     TYPE(oblimap_scan_parameter_type)                                                        :: advised_scan_parameter
 
+
+    ! Check whether the directory in the path of C%gcm_created_filename exists:
+    CALL check_directory_existence(C%gcm_created_filename)
 
     ! Opening the initial GCM netcdf file, and reading the longitude and latitude coordinates of the initial GCM grid:
     ! Output: initial_gcm_netcdf_file, lon_gcm, lat_gcm
