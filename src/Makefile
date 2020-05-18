@@ -52,13 +52,12 @@
 
 # Include below the Makefile.include which matches with your fortran compiler:
 include Makefile.gfortran
-#include Makefile.gfortran-mp-4.9-mac
 #include Makefile.gfortran-mp-6-mac
 #include Makefile.gfortran-lisa
 #include Makefile.ifort-lisa
 #include Makefile.ifort-staff.science
-#include Makefile.ftn-cca-ecmwf
 #include Makefile.ifort-stampede
+#include Makefile.ftn-cca-ecmwf
 
 # The OBJ_PATH and the MOD_PATH are defined:
 OBJ_PATH = object-files
